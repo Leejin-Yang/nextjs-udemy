@@ -1,5 +1,8 @@
-import Link from 'next/link'
 import type { DummyEvent } from '../../data/dummy-data'
+import Button from '../common/button'
+import AddressIcon from '../svgs/addressIcon'
+import ArrowRightIcon from '../svgs/arrowRightIcon'
+import DateIcon from '../svgs/dateIcon'
 import styles from './eventItem.module.css'
 
 interface Props {
@@ -24,16 +27,21 @@ const EventItem = ({ event }: Props) => {
         <div className={styles.summary}>
           <h2>{title}</h2>
           <div className={styles.date}>
+            <DateIcon />
             <time>{humanReadableDate}</time>
           </div>
           <div className={styles.address}>
+            <AddressIcon />
             <address>{formattedAddress}</address>
           </div>
         </div>
         <div className={styles.actions}>
-          <Link href={exploreLink}>
-            <a>Explore Event</a>
-          </Link>
+          <Button link={exploreLink}>
+            <span>Explore Event</span>
+            <span className={styles.icon}>
+              <ArrowRightIcon />
+            </span>
+          </Button>
         </div>
       </div>
     </li>
