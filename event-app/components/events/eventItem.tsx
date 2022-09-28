@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { DummyEvent } from '../../data/dummy-data'
+import styles from './eventItem.module.css'
 
 interface Props {
   event: DummyEvent
@@ -17,19 +18,19 @@ const EventItem = ({ event }: Props) => {
   const exploreLink = `/events/${id}`
 
   return (
-    <li>
+    <li className={styles.item}>
       <img src={`/${image}`} alt={title} />
-      <div>
-        <div>
+      <div className={styles.content}>
+        <div className={styles.summary}>
           <h2>{title}</h2>
-          <div>
+          <div className={styles.date}>
             <time>{humanReadableDate}</time>
           </div>
-          <div>
+          <div className={styles.address}>
             <address>{formattedAddress}</address>
           </div>
         </div>
-        <div>
+        <div className={styles.actions}>
           <Link href={exploreLink}>
             <a>Explore Event</a>
           </Link>
