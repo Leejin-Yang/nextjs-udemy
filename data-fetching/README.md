@@ -196,3 +196,49 @@ export const getStaticProps: GetStaticProps = (context) => {
 - getStaticProps: context.params. 서버에서 이루어진다. 컴포넌트 함수보다 먼저 실행된다. pre-render하기 위한 함수이기 때문
 
 ![page-error](https://user-images.githubusercontent.com/78616893/193027176-ff9bb734-3d0a-4af8-984e-245899e29ee7.png)
+
+<br>
+
+## Pre-Generated Paths (Routes)
+
+왜 위와 같은 에러가 날까?
+
+**_Nextjs는 동적 페이지에서 페이지를 사전 생성하지 않는다!_**
+
+해당 페이지로 연결되는 동적 세그먼트가 있는 경우 기본 동작으로 페이지를 사전 생성하지 않는다. 엄밀히 말해서 여러 페이지이기 때문에. Nextjs는 얼마나 많은 페이지를 미리 생성해야 하는지 알지 못한다. [pid]에서 어떤 값이 지원되는지 알지 못한다. 동적 라우트의 경우 Nextjs는 더 많은 정보가 필요하다.
+
+Nextjs에 어떤 경로가 생성되어야 하는지 동적 페이지에서 어떤 인스턴스가 사전 생성되어야 하는지 알려줄 수 있다. 데이터만 필요한게 아니라 어떤 동적 세그먼트 값을 사용할 수 있는지 알아야 한다. 그리고 어떤 값에 대한 페이지가 사전 생성되어야 하는지 알아야 그 페이지의 여러 인스턴스를 사전 생성할 수 있게 된다. `getStaticPaths`
+
+```tsx
+export async function getStaticPaths() {...}
+```
+
+동적 페이지의 어떤 인스턴스를 생성할지 Nextjs에 알리는 것을 목표로 한다.
+
+```tsx
+export const getStaticPaths: GetStaticPaths = () => {
+  return {
+    paths: [
+      { params: { pid: 'p1' } },
+      { params: { pid: 'p2' } },
+      { params: { pid: 'p3' } },
+    ],
+    fallback: false,
+  }
+}
+```
+
+- paths: Array<Object>
+  - 객체에는 params 키. 값은 각각의 동적 세그먼트 식별자 (pid)
+  - 페이지가 생성되기 위한 구체적인 값
+- fallback: (아래에서 설명)
+
+동적 페이지의 어떤 구체적인 인스턴스를 사전 생성할지 알려주는 함수이다.
+
+<img width="673" alt="build-with-getStaticPaths" src="https://user-images.githubusercontent.com/78616893/193045800-249e4feb-feac-4761-881e-eccf3e833244.png">
+
+build하면 p1, p2, p3 페이지가 생성된 것을 볼 수 있다.
+
+메인 페이지에 링크가 있다. 프로덕션 준비 페이지에서 개발자 도구 Network 탭을 보면 데이터를 pre-fetching 하는 것도 볼 수 있다(p1.json, p2.json, p3.json). 링크를 클릭하면 새로 고침 될 페이지에 대한 프로퍼티가 pre-fetching된 것을 볼 수 있다. 링크를 클릭하지 않아도 확인할 수 있다. 데이터가 pre-fetch 되는 시점은 Nextjs가 결정하고 실행한다.
+
+링크를 클릭하면 pre-rendering된 HTML 파일을 로드하는 것이 아니라 SPA에 계속 머무르고 있다. 초기 요청 이후 로드하고 hydrate하는 React 앱에 있는 것이다. JS가 새 페이지를 렌더링하는데 페이지에 필요한 데이터를 가져오는 곳은 pre-fetching 된 json 파일. 페이지로 이동 후 데이터를 fetch할 필요가 없다.
