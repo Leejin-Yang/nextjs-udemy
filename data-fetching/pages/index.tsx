@@ -5,6 +5,7 @@ import path from 'path'
 interface Product {
   id: string
   title: string
+  description: string
 }
 
 interface Props {
@@ -27,6 +28,12 @@ export const getStaticProps: GetStaticProps = async () => {
   const filePath = path.join(process.cwd(), 'data', 'dummyBackend.json')
   const jsonData = fs.readFileSync(filePath, { encoding: 'utf-8' })
   const data = JSON.parse(jsonData) as { products: Product[] }
+
+  if (data.products.length === 0) {
+    return {
+      notFound: true,
+    }
+  }
 
   return {
     props: {

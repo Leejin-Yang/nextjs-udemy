@@ -142,3 +142,26 @@ Incremental Static Generation
 개발 서버에서는 항상 최신 데이터가 포함된 최신 페이지가 표시되지만 프로덕션에서는 위에 설정한 시간에 따라 업데이트.
 
 getStaticProps가 프로덕션 준비 사이트를 실행하는 서버에서 다시 실행된다. 브라우저에서도 아니고 빌드 프로세스 중에서도 아닌 start로 배포된 후 서버에서 실행. getStaticProps에 콘솔로그로 확인해보자.
+
+<br>
+
+### getStaticProps 자세히 살펴보기
+
+반환되는 객체
+
+```tsx
+return {
+  props: {
+    products: data.products,
+  },
+  revalidate: 600,
+  notFound: false,
+  redirect: {
+    destination: '/no-data',
+  },
+}
+```
+
+- notFound: boolean
+  - true로 설정하면 페이지가 404 오류를 반환하고 404 오류 페이지를 렌더링한다. 데이터 fetch에 실패한 경우에 사용한다.
+- redirect: 사용자를 다른 라우트로 리디렉션 할 수 있다. 데이터 fetch에 실패한 경우에 필요한 설정
