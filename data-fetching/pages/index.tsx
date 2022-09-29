@@ -32,5 +32,6 @@ export const getStaticProps: GetStaticProps = async () => {
     props: {
       products: data.products,
     },
+    revalidate: 600,
   }
 }
