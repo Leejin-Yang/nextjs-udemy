@@ -9,6 +9,10 @@ interface Props {
 }
 
 const ProductDetailPage = ({ product }: Props) => {
+  //  if (!product) {
+  //    return <p>Loading...</p>
+  //  }
+
   const { title, description } = product
 
   return (
@@ -37,11 +41,7 @@ export const getStaticProps: GetStaticProps = (context) => {
 
 export const getStaticPaths: GetStaticPaths = () => {
   return {
-    paths: [
-      { params: { pid: 'p1' } },
-      { params: { pid: 'p2' } },
-      { params: { pid: 'p3' } },
-    ],
-    fallback: false,
+    paths: [{ params: { pid: 'p1' } }],
+    fallback: 'blocking',
   }
 }
