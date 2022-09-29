@@ -2,11 +2,8 @@ import { GetStaticProps } from 'next'
 import fs from 'fs'
 import path from 'path'
 
-interface Product {
-  id: string
-  title: string
-  description: string
-}
+import { Product } from '../types/product'
+import Link from 'next/link'
 
 interface Props {
   products: Product[]
@@ -16,7 +13,9 @@ const HomePage = ({ products }: Props) => {
   return (
     <ul>
       {products.map((product) => (
-        <li key={`product-${product.id}`}>{product.title}</li>
+        <li key={`product-${product.id}`}>
+          <Link href={`/${product.id}`}>{product.title}</Link>
+        </li>
       ))}
     </ul>
   )

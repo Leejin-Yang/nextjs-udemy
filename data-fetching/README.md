@@ -165,3 +165,34 @@ return {
 - notFound: boolean
   - true로 설정하면 페이지가 404 오류를 반환하고 404 오류 페이지를 렌더링한다. 데이터 fetch에 실패한 경우에 사용한다.
 - redirect: 사용자를 다른 라우트로 리디렉션 할 수 있다. 데이터 fetch에 실패한 경우에 필요한 설정
+
+```tsx
+export async function getStaticProps(context) {...}
+```
+
+Nextjs에 의해 호출되고 인수를 받는다. context(페이지에 대한 추가 정보를 가진 객체)
+
+동적 매개변수나 동적 경로 세그먼트 값 등을 얻는다.
+
+ProduceDetailPage 예시
+
+상품 하나만 보여주기 위해 url에 있는 구체적인 값을 가져와야한다. 여기서 context 매개변수를 사용하면 된다. 경로상의 동적 세그먼트에 대한 구체적인 값을 알 수 있다.
+
+```tsx
+// [pid].tsx
+export const getStaticProps: GetStaticProps = (context) => {
+  // params는 객체. key는 동적 경로 세그먼트 여기서는 pid
+  const { params } = context
+
+  return {
+    props: {},
+  }
+}
+```
+
+컴포넌트 함수와 이 함수에서 매개변수를 추출할 때 차이점
+
+- 컴포넌트 함수: router.query. 컴포넌트 내부에서 사용 가능. id를 백엔드 서버에 요청을 보내 거기에서 fetching하기 위해서. 이 과정은 브라우저에서만 이루어진다.
+- getStaticProps: context.params. 서버에서 이루어진다. 컴포넌트 함수보다 먼저 실행된다. pre-render하기 위한 함수이기 때문
+
+![page-error](https://user-images.githubusercontent.com/78616893/193027176-ff9bb734-3d0a-4af8-984e-245899e29ee7.png)
