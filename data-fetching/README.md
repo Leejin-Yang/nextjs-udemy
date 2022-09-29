@@ -63,3 +63,27 @@ export async function getStaticProps(context) {...}
 - js 소스코드에서 코드를 확인할 수 없다 (클라이언트 사이드에서 실행되지 않기 때문에)
 
 사용자가 볼 수 없는 credential을 쓸 수 있고 브라우저에서 작동하지 않는 코드를 실행할 수 있다.
+
+### 서버사이드 코드 실행 & Filesystem
+
+```tsx
+// Node.js로부터 파일 시스템 모듈을 import
+import fs from 'fs'
+// Promise를 사용하는
+import fs from 'fs/promises' // readFile은 Promise를 반환한다.
+
+// 경로를 구축하는데 유용한 기능이 있는 모듈
+import path from 'path'
+```
+
+브라우저측 js가 파일 시스테멩 접근할 수 없기 때문에 클라이언트 사이드에서는 fs 모듈 작업이 안된다. Nextjs는 import를 확인하고(클라이언트 사이드에서 사용하는지 여부를) 클라이언트 사이드 코드 번들에서는 import를 제거한다.
+
+[https://webruden.tistory.com/947](https://webruden.tistory.com/947)
+
+fs.readFile or fs.readFileSync를 통해 파일을 읽는다. readFileSync는 파일을 동기적으로 읽고 완료될 때까지 실행을 차단한다. readFile은 계속하려면 콜백해야한다.
+
+path.join 메소드를 통해 readFile이 사용할 수 있는 경로를 구축할 수 있다. 이를 위해 먼저 어디서 시작하는지 알려주고 다른 Node.js 객체로 현재 작업 디렉토리로 이동할 수 있다.
+
+Node.js에서 전역적으로 사용할 수 있는 process 객체
+
+process.cwd: 실행될 때 코드 파일의 현재 작업 디렉토리를 제공한다. pages 폴더가 아니다. 이 파일이 실행될 때 Nextjs가 이를 실행하고 **_모든 파일이 루트 프로젝트 폴더에 있는 것으로 취급한다._**

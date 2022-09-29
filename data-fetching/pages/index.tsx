@@ -1,4 +1,6 @@
 import { GetStaticProps } from 'next'
+import fs from 'fs'
+import path from 'path'
 
 interface Product {
   id: string
@@ -22,9 +24,13 @@ const HomePage = ({ products }: Props) => {
 export default HomePage
 
 export const getStaticProps: GetStaticProps = async () => {
+  const filePath = path.join(process.cwd(), 'data', 'dummyBackend.json')
+  const jsonData = fs.readFileSync(filePath, { encoding: 'utf-8' })
+  const data = JSON.parse(jsonData) as { products: Product[] }
+
   return {
     props: {
-      products: [{ id: 'p1', title: 'Product 1' }],
+      products: data.products,
     },
   }
 }
