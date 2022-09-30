@@ -265,3 +265,22 @@ true를 사용하면 포함되지 않은 페이지라도 페이지 방문 시 �
 여기서 문제가 있는데 직접 url에 입력해 접속하면 에러가 발생한다. 에러가 발생하는 이유는 동적 사전 생성 기능이 즉시 끝나지 않기 때문이다. fallback 기능을 쓰려면 컴포넌트에서 fallback 상태를 반환할 수 있게 해줘야 한다.
 
 `fallback: ‘blocking’`으로 설정할 경우 페이지가 서비스를 제공하기 전에 Nextjs가 서버에서 완전히 사전 생성되도록 기다린다.
+
+```tsx
+export const getStaticPaths: GetStaticPaths = () => {
+  const data = getData()
+  const ids = data.products.map((product) => product.id)
+  const pathsWithParams = ids.map((id) => ({ params: { pid: id } }))
+
+  return {
+    paths: pathsWithParams,
+    fallback: false,
+  }
+}
+```
+
+나중에 fetching할 실제 데이터와 동일한 데이터를 불러와 paths params를 생성한다.
+
+사전 생성되지 않은 id의 페이지를 불러올 경우 404 에러 페이지가 뜬다. fallback을 true로 설정한다면 파일에서 찾을 수 없는 id에 대해서도 페이지를 렌더링할 수 있다. 데이터가 아직 없는 페이지를 반환하고 백그라운드에서 데이터를 불러와서 페이지를 다시 렌더링한다. 로딩 fallback 페이지 필요하다. 데이터에 해당 값이 없을 경우 정적 프로퍼티를 가져오지 못한다.
+
+use case에 따라 알맞은 프로퍼티를 활용하자. 옵션은 많다.

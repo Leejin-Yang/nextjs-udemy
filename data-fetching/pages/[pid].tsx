@@ -23,16 +23,28 @@ const ProductDetailPage = ({ product }: Props) => {
   )
 }
 
+const getData = () => {
+  const filePath = path.join(process.cwd(), 'data', 'dummyBackend.json')
+  const jsonData = fs.readFileSync(filePath, { encoding: 'utf-8' })
+  const data = JSON.parse(jsonData) as { products: Product[] }
+
+  return data
+}
+
 export default ProductDetailPage
 
 export const getStaticProps: GetStaticProps = (context) => {
   const { params } = context
   const productId = params?.pid
 
-  const filePath = path.join(process.cwd(), 'data', 'dummyBackend.json')
-  const jsonData = fs.readFileSync(filePath, { encoding: 'utf-8' })
-  const data = JSON.parse(jsonData) as { products: Product[] }
+  const data = getData()
   const product = data.products.find((product) => product.id === productId)
+
+  if (!product) {
+    return {
+      notFound: true,
+    }
+  }
 
   return {
     props: { product },
@@ -40,8 +52,12 @@ export const getStaticProps: GetStaticProps = (context) => {
 }
 
 export const getStaticPaths: GetStaticPaths = () => {
+  const data = getData()
+  const ids = data.products.map((product) => product.id)
+  const pathsWithParams = ids.map((id) => ({ params: { pid: id } }))
+
   return {
-    paths: [{ params: { pid: 'p1' } }],
-    fallback: 'blocking',
+    paths: pathsWithParams,
+    fallback: false,
   }
 }
