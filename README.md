@@ -12,3 +12,4 @@
 
 - [file-based-routing](file-based-routing/README.md)
 - [event-app](event-app/README.md)
+- [data-fetching](data-fetching/README.md)
