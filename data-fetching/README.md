@@ -353,3 +353,15 @@ export const getServerSideProps: GetServerSideProps = (context) => {
 /u1으로 이동했을 때 getStaticPaths를 사용하지 않고도 코드가 정상적으로 작동한 이유는 이 함수는 서버에서만 작동하므로 Nextjs에서는 아무 페이지도 사전 생성할 필요가 없고 사전 생성할 대상이 없으니 getStaticPaths 정보가 필요하지 않기 때문이다.
 
 getStaticProps를 사용해 페이지를 사전 생성할 때는 Nextjs에게 어떤 매개변수값의 페이지를 사전 생성해야할지 알려주기 위해 getStaticPaths 사용. getServerSideProps는 서버 사이드 코드에서 모든 요청을 처리하기 때문에 사전 생성할 필요도 동적 경로 또한 미리 설정할 필요도 없다.
+
+<br>
+
+### 내부에서 일어나고 있는 일
+
+<img width="770" alt="build-with-server-side-rendering" src="https://user-images.githubusercontent.com/78616893/193773223-fba32fe0-8565-450a-9edd-95be7dd980c7.png">
+
+user-profile 페이지는 사전 생성되지 않는다. 그 이유는 람다 기호로 end signal을 표시했기 때문이다. 람다 기호가 있는 페이지들은 사전 생성하지 않고 서버 측에서만 pre-rendering 되었다는 뜻이다.
+
+start 했을 때 해당 페이지에 접속하고 프로덕션 서버를 실행한 터미널을 확인해 보면 콘솔로그가 찍혀있는 것을 볼 수 있다. **_페이지는 사전 생성되지 않았다!_**
+
+세 함수의 차이점은 정적인 사전 생성 그리고 서버에서만 실행되는 서버 측 코드의 차이. 컴포넌트에 사용하는 데이터를 서버에서 미리 준비해서 클라이언트에게 완성된 페이지를 제공하면 사용자는 처음부터 완성된 페이지에서 모든 콘텐츠를 이용할 수 있게 된다. 그 외에도 검색 엔진 최적화에도 도움이 된다.
