@@ -284,3 +284,84 @@ export const getStaticPaths: GetStaticPaths = () => {
 사전 생성되지 않은 id의 페이지를 불러올 경우 404 에러 페이지가 뜬다. fallback을 true로 설정한다면 파일에서 찾을 수 없는 id에 대해서도 페이지를 렌더링할 수 있다. 데이터가 아직 없는 페이지를 반환하고 백그라운드에서 데이터를 불러와서 페이지를 다시 렌더링한다. 로딩 fallback 페이지 필요하다. 데이터에 해당 값이 없을 경우 정적 프로퍼티를 가져오지 못한다.
 
 use case에 따라 알맞은 프로퍼티를 활용하자. 옵션은 많다.
+
+<br>
+
+## Server-side Rendering
+
+getStaticProps와 getStaticPaths 내부에서는 들어오는 실제 요청에 접근할 수 없다. 실제 요청만을 위해 호출한 것이 아니다. ISR은 유효성 검사 때문에 유입되는 요청을 위해 호출하기도 하지만 일반적으로 프로젝트를 build할 때 호출한다. 일반적으로 실제 요청에 접근할 필요도 없다.
+
+SSR은 유입되는 모든 요청에 대한 페이지를 사전 렌더링하는 것이다. 모든 요청에 대해서나 서버에 도달하는 특정 요청 객체에 접근할 필요가 있다 (ex 쿠키를 추출해야 하는 경우). Nextjs는 SSR을 지원하는데 이는 페이지 컴포넌트 파일을 추가할 수 있는 함수를 제공한다는 것이다. **_페이지 요청이 서버에 도달할 때마다 실행되는 함수._** 빌드 시간이나 매초마다 사전 생성하지 않고, 서버에서만 작동하는 코드이다. 배포 후 유입되는 모든 요청에 대해서만 재실행된다.
+
+```tsx
+export async function getServerSideProps() {...}
+```
+
+**_해당 페이지에 대한 요청이 들어올 때마다 실행한다._**
+
+getStaticProps나 getServerSideProps 둘 중 하나만 선택해서 사용해야한다. 동일한 작업을 수행해 충돌이 일어날 수 있다.
+
+### getServerSideProps
+
+쿠키와 헤더가 든 요청 객체에 접근해서 어느 사용자가 요청을 보냈는지 알아내는 것이다. 어느 사용자가 접근하는지도 모르고 쿠키에도 접근할 수 없으므로 pre-rendering을 수행할 수 없다. 이럴 때 사용하는 함수가 `getServerSideProps`
+
+```tsx
+export const getServerSideProps: GetServerSideProps = () => {
+  return {
+    props: {},
+  }
+}
+```
+
+이때 반환할 객체는 getStaticProps와 같은 포맷으로 설정해야 한다. (revalidate 프로퍼티는 설정하지 않는다.)
+
+getServerSideProps 함수는 들어오는 요청에 전부 유효성 검사를 실행한다.
+
+프로젝트를 생성하기 전에 불러오는 것이 아니라 요청이 들어올 때마다 불러오는 것이다. 이 함수는 배포된 서버와 개발 서버에서만 실행된다. 사전에 생성된 정적 함수는 아니다.
+
+서버에서만 실행된다는 것은 무슨 의미일까?
+
+context 객체를 보면 알 수 있다. getStaticProps와 다르게 요청 객체 전체에도 접근할 수 있게 된다. 응답 객체에 접근해서 해당 요청을 조정하거나 헤더도 추가할 수 있다. **_요청, 응답 객체 (Node.js 기본 입력 메시지와 응답)_**
+
+[https://nodejs.org/api/http.html#http_class_http_incomingmessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage)
+
+[https://nodejs.org/api/http.html#http_class_http_serverresponse](https://nodejs.org/api/http.html#http_class_http_serverresponse)
+
+적절한 응답을 얻을 때까지 필요한 만큼 요청 객체를 조종할 수도 있고, 요청이 가기 전에 조정하는 방법도 있다 (헤더 추가, 쿠키 추가). 그리고 서버에 도달한 요청 객체를 분석해서 거기서 들어오는 데이터를 읽을 수 있다 (해당 요청에 달린 헤더, 쿠키 데이터).
+
+가장 큰 차이는 context 객체에 접근할 수 있는 데이터 종류가 다르고 함수가 실행되는 시점이 다르다는 점이다.
+
+<br>
+
+### 동적 페이지에서 사용하는 방법
+
+getServerSideProps를 사용하면 getStaticPaths를 사용할 필요가 없다 (있을 수 없다).
+
+```tsx
+export const getServerSideProps: GetServerSideProps = (context) => {
+  const { params } = context
+  const userId = params?.uid
+
+  return {
+    props: {
+      userId,
+    },
+  }
+}
+```
+
+/u1으로 이동했을 때 getStaticPaths를 사용하지 않고도 코드가 정상적으로 작동한 이유는 이 함수는 서버에서만 작동하므로 Nextjs에서는 아무 페이지도 사전 생성할 필요가 없고 사전 생성할 대상이 없으니 getStaticPaths 정보가 필요하지 않기 때문이다.
+
+getStaticProps를 사용해 페이지를 사전 생성할 때는 Nextjs에게 어떤 매개변수값의 페이지를 사전 생성해야할지 알려주기 위해 getStaticPaths 사용. getServerSideProps는 서버 사이드 코드에서 모든 요청을 처리하기 때문에 사전 생성할 필요도 동적 경로 또한 미리 설정할 필요도 없다.
+
+<br>
+
+### 내부에서 일어나고 있는 일
+
+<img width="770" alt="build-with-server-side-rendering" src="https://user-images.githubusercontent.com/78616893/193773223-fba32fe0-8565-450a-9edd-95be7dd980c7.png">
+
+user-profile 페이지는 사전 생성되지 않는다. 그 이유는 람다 기호로 end signal을 표시했기 때문이다. 람다 기호가 있는 페이지들은 사전 생성하지 않고 서버 측에서만 pre-rendering 되었다는 뜻이다.
+
+start 했을 때 해당 페이지에 접속하고 프로덕션 서버를 실행한 터미널을 확인해 보면 콘솔로그가 찍혀있는 것을 볼 수 있다. **_페이지는 사전 생성되지 않았다!_**
+
+세 함수의 차이점은 정적인 사전 생성 그리고 서버에서만 실행되는 서버 측 코드의 차이. 컴포넌트에 사용하는 데이터를 서버에서 미리 준비해서 클라이언트에게 완성된 페이지를 제공하면 사용자는 처음부터 완성된 페이지에서 모든 콘텐츠를 이용할 수 있게 된다. 그 외에도 검색 엔진 최적화에도 도움이 된다.
