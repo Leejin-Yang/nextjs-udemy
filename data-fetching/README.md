@@ -284,3 +284,37 @@ export const getStaticPaths: GetStaticPaths = () => {
 사전 생성되지 않은 id의 페이지를 불러올 경우 404 에러 페이지가 뜬다. fallback을 true로 설정한다면 파일에서 찾을 수 없는 id에 대해서도 페이지를 렌더링할 수 있다. 데이터가 아직 없는 페이지를 반환하고 백그라운드에서 데이터를 불러와서 페이지를 다시 렌더링한다. 로딩 fallback 페이지 필요하다. 데이터에 해당 값이 없을 경우 정적 프로퍼티를 가져오지 못한다.
 
 use case에 따라 알맞은 프로퍼티를 활용하자. 옵션은 많다.
+
+<br>
+
+## Server-side Rendering
+
+getStaticProps와 getStaticPaths 내부에서는 들어오는 실제 요청에 접근할 수 없다. 실제 요청만을 위해 호출한 것이 아니다. ISR은 유효성 검사 때문에 유입되는 요청을 위해 호출하기도 하지만 일반적으로 프로젝트를 build할 때 호출한다. 일반적으로 실제 요청에 접근할 필요도 없다.
+
+SSR은 유입되는 모든 요청에 대한 페이지를 사전 렌더링하는 것이다. 모든 요청에 대해서나 서버에 도달하는 특정 요청 객체에 접근할 필요가 있다 (ex 쿠키를 추출해야 하는 경우). Nextjs는 SSR을 지원하는데 이는 페이지 컴포넌트 파일을 추가할 수 있는 함수를 제공한다는 것이다. **_페이지 요청이 서버에 도달할 때마다 실행되는 함수._** 빌드 시간이나 매초마다 사전 생성하지 않고, 서버에서만 작동하는 코드이다. 배포 후 유입되는 모든 요청에 대해서만 재실행된다.
+
+```tsx
+export async function getServerSideProps() {...}
+```
+
+**_해당 페이지에 대한 요청이 들어올 때마다 실행한다._**
+
+getStaticProps나 getServerSideProps 둘 중 하나만 선택해서 사용해야한다. 동일한 작업을 수행해 충돌이 일어날 수 있다.
+
+### getServerSideProps
+
+쿠키와 헤더가 든 요청 객체에 접근해서 어느 사용자가 요청을 보냈는지 알아내는 것이다. 어느 사용자가 접근하는지도 모르고 쿠키에도 접근할 수 없으므로 pre-rendering을 수행할 수 없다. 이럴 때 사용하는 함수가 `getServerSideProps`
+
+```tsx
+export const getServerSideProps: GetServerSideProps = () => {
+  return {
+    props: {},
+  }
+}
+```
+
+이때 반환할 객체는 getStaticProps와 같은 포맷으로 설정해야 한다. (revalidate 프로퍼티는 설정하지 않는다.)
+
+getServerSideProps 함수는 들어오는 요청에 전부 유효성 검사를 실행한다.
+
+프로젝트를 생성하기 전에 불러오는 것이 아니라 요청이 들어올 때마다 불러오는 것이다. 이 함수는 배포된 서버와 개발 서버에서만 실행된다. 사전에 생성된 정적 함수는 아니다.
