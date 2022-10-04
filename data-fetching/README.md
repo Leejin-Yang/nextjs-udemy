@@ -318,3 +318,38 @@ export const getServerSideProps: GetServerSideProps = () => {
 getServerSideProps 함수는 들어오는 요청에 전부 유효성 검사를 실행한다.
 
 프로젝트를 생성하기 전에 불러오는 것이 아니라 요청이 들어올 때마다 불러오는 것이다. 이 함수는 배포된 서버와 개발 서버에서만 실행된다. 사전에 생성된 정적 함수는 아니다.
+
+서버에서만 실행된다는 것은 무슨 의미일까?
+
+context 객체를 보면 알 수 있다. getStaticProps와 다르게 요청 객체 전체에도 접근할 수 있게 된다. 응답 객체에 접근해서 해당 요청을 조정하거나 헤더도 추가할 수 있다. **_요청, 응답 객체 (Node.js 기본 입력 메시지와 응답)_**
+
+[https://nodejs.org/api/http.html#http_class_http_incomingmessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage)
+
+[https://nodejs.org/api/http.html#http_class_http_serverresponse](https://nodejs.org/api/http.html#http_class_http_serverresponse)
+
+적절한 응답을 얻을 때까지 필요한 만큼 요청 객체를 조종할 수도 있고, 요청이 가기 전에 조정하는 방법도 있다 (헤더 추가, 쿠키 추가). 그리고 서버에 도달한 요청 객체를 분석해서 거기서 들어오는 데이터를 읽을 수 있다 (해당 요청에 달린 헤더, 쿠키 데이터).
+
+가장 큰 차이는 context 객체에 접근할 수 있는 데이터 종류가 다르고 함수가 실행되는 시점이 다르다는 점이다.
+
+<br>
+
+### 동적 페이지에서 사용하는 방법
+
+getServerSideProps를 사용하면 getStaticPaths를 사용할 필요가 없다 (있을 수 없다).
+
+```tsx
+export const getServerSideProps: GetServerSideProps = (context) => {
+  const { params } = context
+  const userId = params?.uid
+
+  return {
+    props: {
+      userId,
+    },
+  }
+}
+```
+
+/u1으로 이동했을 때 getStaticPaths를 사용하지 않고도 코드가 정상적으로 작동한 이유는 이 함수는 서버에서만 작동하므로 Nextjs에서는 아무 페이지도 사전 생성할 필요가 없고 사전 생성할 대상이 없으니 getStaticPaths 정보가 필요하지 않기 때문이다.
+
+getStaticProps를 사용해 페이지를 사전 생성할 때는 Nextjs에게 어떤 매개변수값의 페이지를 사전 생성해야할지 알려주기 위해 getStaticPaths 사용. getServerSideProps는 서버 사이드 코드에서 모든 요청을 처리하기 때문에 사전 생성할 필요도 동적 경로 또한 미리 설정할 필요도 없다.

@@ -2,7 +2,7 @@ import { GetStaticPaths, GetStaticProps } from 'next'
 import fs from 'fs'
 import path from 'path'
 
-import { Product } from '../types/product'
+import { Product } from '../../types/product'
 
 interface Props {
   product: Product
