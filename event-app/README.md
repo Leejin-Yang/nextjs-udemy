@@ -35,7 +35,6 @@ CSS 모듈 기능을 이용하면 본 CSS 파일에서 할당된 클래스명이
 
 ```tsx
 import styles from './eventItem.module.css'
-
 ;<li className={styles.item}>itme</li>
 ```
 
@@ -138,3 +137,52 @@ ref 타입 오류
 [https://zerodice0.tistory.com/244](https://zerodice0.tistory.com/244)
 
 초기값으로 null
+
+<br>
+
+## With Data Fetching
+
+### HomePage
+
+검색 엔진 최적화, 데이터가 짧은 시간에 여러번 바뀔 가능성 적다. 클라이언트 사이드에서 페이지를 로드할 이유가 없다. 그렇다면 getServerSideProps를 이용해 모든 요청에 대해서 페이지를 즉시 서버에서 pre-rendering 할 것인지, 아니면 getStaticProps를 이용해 대부분의 페이지가 업데이트되도록 특정값에 유효성 재검사를 하면 빌드 프로세스 중 또는 잠재적으로 서버상에서 페이지가 pre-rendering 되도록 해야할까? 모든 요청에 대해 사전 렌더링 할 필요가 없다. getStaticProps
+
+firebase에서 데이터를 가져온다. 어떻게 필터링을 할 수 있을까? 쿼리 파라미터와 함께 전송되는 HTTP 요청을 조정할 수 있다.
+
+[https://firebase.google.com/docs/database/admin/retrieve-data](https://firebase.google.com/docs/database/admin/retrieve-data)
+
+firebase 과정이 아니니 전체 데이터를 가져와 js에서 작업하는 유틸 함수를 작성한다.
+
+```tsx
+export interface Event {
+  id: string
+  title: string
+  description: string
+  location: string
+  date: string
+  image: string
+  isFeatured: boolean
+}
+
+export async function getAllEvents() {
+  const response = await fetch(
+    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
+  )
+  const data = await response.json()
+
+  const events: Event[] = []
+
+  for (const key in data) {
+    events.push({
+      id: key,
+      ...data[key],
+    })
+  }
+
+  return events
+}
+
+export async function getFeaturedEvents() {
+  const allEvents = await getAllEvents()
+  return allEvents.filter((event) => event.isFeatured)
+}
+```
