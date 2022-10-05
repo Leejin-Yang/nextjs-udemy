@@ -1,6 +1,7 @@
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import useSWR from 'swr'
+//import useSWR from 'swr'
 
 import Button from '../../components/common/button'
 import ErrorAlert from '../../components/common/errorAlert'
@@ -15,59 +16,76 @@ const FilteredEventsPage = () => {
   const router = useRouter()
   const filterData = router.query.slug as string[]
 
-  const { data, error } = useSWR(
-    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
-  )
-
-  useEffect(() => {
-    if (!data) return
-
-    const events: Event[] = []
-
-    for (const key in data) {
-      events.push({
-        id: key,
-        ...data[key],
-      })
-    }
-
-    setLoadedEvents(events)
-  }, [data])
+  //const { data, error } = useSWR(
+  //  'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
+  //)
 
   //useEffect(() => {
-  //  const fetchData = async () => {
-  //    try {
-  //      const response = await fetch(
-  //        'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
-  //      )
-  //      const data = await response.json()
+  //  if (!data) return
 
-  //      const events: Event[] = []
+  //  const events: Event[] = []
 
-  //      for (const key in data) {
-  //        events.push({
-  //          id: key,
-  //          ...data[key],
-  //        })
-  //      }
-
-  //      setLoadedEvents(events)
-  //    } catch {
-  //      setIsError(true)
-  //    }
+  //  for (const key in data) {
+  //    events.push({
+  //      id: key,
+  //      ...data[key],
+  //    })
   //  }
-  //  fetchData()
-  //}, [])
 
-  if (!loadedEvents) {
-    return <p className='center'>Loading...</p>
-  }
+  //  setLoadedEvents(events)
+  //}, [data])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
+        )
+        const data = await response.json()
+
+        const events: Event[] = []
+
+        for (const key in data) {
+          events.push({
+            id: key,
+            ...data[key],
+          })
+        }
+
+        setLoadedEvents(events)
+      } catch {
+        setIsError(true)
+      }
+    }
+    fetchData()
+  }, [])
 
   const filteredYear = filterData[0]
   const filteredMonth = filterData[1]
 
   const numberYear = Number(filteredYear)
   const numberMonth = Number(filteredMonth)
+
+  const pageHeadData = (
+    <Head>
+      <title>
+        Filtered Events {numberMonth}/{numberYear} | NextEvents
+      </title>
+      <meta
+        name='description'
+        content={`All events for ${numberMonth}/${numberYear}`}
+      />
+    </Head>
+  )
+
+  if (!loadedEvents) {
+    return (
+      <>
+        {pageHeadData}
+        <p className='center'>Loading...</p>
+      </>
+    )
+  }
 
   const isValidYear = numberYear >= 2021 && numberYear <= 2030
   const isValidMonth = numberMonth >= 1 && numberMonth <= 12
@@ -81,6 +99,7 @@ const FilteredEventsPage = () => {
   ) {
     return (
       <>
+        {pageHeadData}
         <ErrorAlert>
           <p>Invalid filter. Please adjust your values!</p>
         </ErrorAlert>
@@ -102,6 +121,7 @@ const FilteredEventsPage = () => {
   if (!filteredEvents || filteredEvents.length === 0) {
     return (
       <>
+        {pageHeadData}
         <ErrorAlert>
           <p>No events found for the chosen filter!</p>
         </ErrorAlert>
@@ -116,6 +136,7 @@ const FilteredEventsPage = () => {
 
   return (
     <>
+      {pageHeadData}
       <ResultsTitle date={selectedDate} />
       <EventList events={filteredEvents} />
     </>

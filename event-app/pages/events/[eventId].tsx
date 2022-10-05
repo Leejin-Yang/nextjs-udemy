@@ -1,4 +1,5 @@
 import { GetStaticPaths, GetStaticProps } from 'next'
+import Head from 'next/head'
 
 import EventContent from '../../components/eventDetail/eventContent'
 import EventLogistics from '../../components/eventDetail/eventLogistics'
@@ -12,6 +13,10 @@ interface Props {
 const EventDetailPage = ({ event }: Props) => {
   return (
     <>
+      <Head>
+        <title>{event.title} | NextEvents</title>
+        <meta name='description' content={event.description} />
+      </Head>
       <EventSummary title={event.title} />
       <EventLogistics
         date={event.date}
