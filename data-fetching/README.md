@@ -365,3 +365,142 @@ user-profile 페이지는 사전 생성되지 않는다. 그 이유는 람다 �
 start 했을 때 해당 페이지에 접속하고 프로덕션 서버를 실행한 터미널을 확인해 보면 콘솔로그가 찍혀있는 것을 볼 수 있다. **_페이지는 사전 생성되지 않았다!_**
 
 세 함수의 차이점은 정적인 사전 생성 그리고 서버에서만 실행되는 서버 측 코드의 차이. 컴포넌트에 사용하는 데이터를 서버에서 미리 준비해서 클라이언트에게 완성된 페이지를 제공하면 사용자는 처음부터 완성된 페이지에서 모든 콘텐츠를 이용할 수 있게 된다. 그 외에도 검색 엔진 최적화에도 도움이 된다.
+
+<br>
+
+## Client-side Data Fetching
+
+사전 렌더링을 할 필요가 없거나 사전 렌더링을 할 수 없는 데이터를 다루게 될 것이다.
+
+- 갱신 주기가 잦은 데이터 (방문했을 때 최신 데이터를 가져와 백그라운드에서 업데이트가 더 나은 방안)
+- 특정 유저에만 한정되는 데이터 (최근 주문 내역, 계정에서의 데이터)
+- 데이터의 일부분만 표시하는 경우. 페이지의 정보는 개인적이기 때문에 React 앱에 포함된 데이터를 사용자가 방문할 때만 불러오도록 해야 한다.
+- …
+
+클라이언트에서 코드가 실행될 때 컴포넌트에서 데이터를 가져오도록 구축
+
+[https://firebase.google.com/?hl=ko](https://firebase.google.com/?hl=ko)
+
+firebase: 백엔드 환경을 설정할 수 있는 구글에서 제공하는 서비스. 주요 기능으로 API가 탑재된 DB
+
+firebase의 realtime db을 이용해 예제 진행. 생성 → 테스트모드에서 시작 (외부에서 DB에 접근)
+
+장점은 내용을 직접 확인할 수 있고 API를 활용해 요청을 전송하면 firebase에서 db 연산으로 자동으로 변환해준다. API 요청을 하면 자동으로 데이터의 입력과 삭제 등 원하는 대로 요청을 처리해 준다.
+
+useEffect는 모든 컴포넌트의 최초 평가와 렌더링을 마친 뒤 실행되도록 설계되어 있다. 첫 렌더링 사이클에서는 sales가 정의되어 있지 않다.
+
+페이지 소스에서 보면 빈 ul만 볼 수 있다. 페이지는 여전히 Nextjs에서 pre-rendering되었기 때문이다. 이 페이지에서 사용된 데이터는 사전에 준비된 데이터가 아니다. Nextjs에서 페이지를 pre-rendering할 때 useEffect를 거치지 않는다. Nextjs는 useEffect와 상관없이 컴포넌트에서 최초로 반환하는 결과로 pre-rendering을 진행하고 그런 이유로 아무런 데이터가 없다. (sales는 최초에 undefined)
+
+pre-rendering이 이루어지지만 데이터가 없고 데이터를 클라이언트 사이드에서 fetching하고 있다.
+
+<br>
+
+### useSWR (stale-while-revalidate)
+
+[https://swr.vercel.app/ko](https://swr.vercel.app/ko)
+
+```tsx
+useSWR(<request-url>, (url) => fetch(url).then(res => res.json()))
+```
+
+이전에 작성한 코드의 장점은 전체 컴포넌트 상태를 완전히 제어할 수 있으며 데이터 fetching 방식을 통제한다. 이런 패턴은 일반적이다. 자체 사용자 정의 훅을 생성하여 거기에 아웃소싱하거나 서드 파티 훅을 사용할 수 있다.
+
+```bash
+npm install swr
+# or
+yarn add swr
+```
+
+useSWR
+
+Nextjs에서 개발한 hook. HTTP 요청을 보낼 때 fetch API를 사용한다. 캐싱, 자동 유효성 재검사, 에러 시 요청 재시도 등 여러 기능이 내장되어 있다. 컴포넌트에서 직접 사용해야 한다.
+
+하나 이상의 인수로서 보낼 요청의 식별자가 필요한데 일반적으로 url. 식별자라고 부르는 이유는 같은 url에 여러 요청을 한번에 묶어 보내기 때문이다. 특정 기간 동안 한번의 요청으로 전송한다. 두번째 인수로 fetcher() 함수를 넣어도 된다. 요청이 어떤 방식으로 전송될지 정하는 함수이다.
+
+컴포넌트가 로딩되면 url로 요청이 전송. 훅으로 반환된 데이터로 작업을 할 수 있다.
+
+여기서 firebase를 통해 오는 데이터를 변환해야하는데, 변환 방법에는 두 가지가 있다.
+
+자체 fetcher 함수를 정의 또는 useEffect (단순히 데이터 변환에만) 사용
+
+```tsx
+const fetcher = (url: string) =>
+  fetch(url)
+    .then((res) => res.json())
+    .then((data) => {
+      const transformedSales = []
+
+      for (const key in data) {
+        transformedSales.push({
+          id: key,
+          userName: data[key].userName,
+          volume: data[key].volume,
+        })
+      }
+
+      return transformedSales
+    })
+
+const LastSalesPage = () => {
+	const { data, error } = useSWR(
+    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/sales.json',
+    fetcher
+  )
+
+	...
+}
+```
+
+getStaticProps에서 fetch 앞에 return을 붙여 전체 프로미스 체인을 반환한다. 모든 단계 및 최종 데이터를 가지는 전체 프로미스가 getStaticProps로 반환되도록 한다. 다른 방법으로는 await 키워드를 사용한다.
+
+```tsx
+export const getStaticProps: GetStaticProps = async () => {
+  return fetch(
+    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/sales.json'
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      // data는 객체의 형태로 오기에 배열로 transform 해준다.
+      // data === {s1: {}, s2: {}}
+      const transformedSales = []
+
+      for (const key in data) {
+        transformedSales.push({
+          id: key,
+          userName: data[key].userName,
+          volume: data[key].volume,
+        })
+      }
+
+      return {
+        props: { sales: transformedSales },
+        revalidate: 10,
+      }
+    })
+}
+```
+
+```tsx
+export const getStaticProps: GetStaticProps = async () => {
+  const response = await fetch(
+    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/sales.json'
+  )
+  const data = await response.json()
+  const transformedSales = []
+
+  for (const key in data) {
+    transformedSales.push({
+      id: key,
+      userName: data[key].userName,
+      volume: data[key].volume,
+    })
+  }
+
+  return {
+    props: { sales: transformedSales },
+    revalidate: 10,
+  }
+}
+```
+
+props로 받아온 sales를 useState의 기본값으로 설정. 훅을 이용해 데이터 fetching. useEffect로 상태 업데이트. 데이터를 추가했을 때 추가한 데이터는 페이지 소스에서 볼 수 없다. 왜냐하면 클라이언트 사이드에서 데이터 fetching이 이루어졌기 때문이다. 시작부터 일부 데이터를 가지게 한 다음 브라우저 내부에서 업데이트 하는 선택지도 있다.
