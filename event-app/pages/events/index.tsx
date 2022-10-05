@@ -1,11 +1,15 @@
+import { GetStaticProps } from 'next'
 import { useRouter } from 'next/router'
 import EventList from '../../components/events/eventList'
 import EventSearch from '../../components/events/eventSearch'
-import { getAllEvents } from '../../data/dummy-data'
+import { Event, getAllEvents } from '../../services/events'
 
-const AllEventsPage = () => {
+interface Props {
+  events: Event[]
+}
+
+const AllEventsPage = ({ events }: Props) => {
   const router = useRouter()
-  const events = getAllEvents()
 
   const filterEvent = (year: string, month: string) => {
     const fullPath = `/events/${year}/${month}`
@@ -22,3 +26,14 @@ const AllEventsPage = () => {
 }
 
 export default AllEventsPage
+
+export const getStaticProps: GetStaticProps = async () => {
+  const events = await getAllEvents()
+
+  return {
+    props: {
+      events,
+    },
+    revalidate: 60,
+  }
+}
