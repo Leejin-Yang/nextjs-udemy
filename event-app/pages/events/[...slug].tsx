@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import useSWR from 'swr'
+//import useSWR from 'swr'
 
 import Button from '../../components/common/button'
 import ErrorAlert from '../../components/common/errorAlert'
@@ -15,49 +15,49 @@ const FilteredEventsPage = () => {
   const router = useRouter()
   const filterData = router.query.slug as string[]
 
-  const { data, error } = useSWR(
-    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
-  )
-
-  useEffect(() => {
-    if (!data) return
-
-    const events: Event[] = []
-
-    for (const key in data) {
-      events.push({
-        id: key,
-        ...data[key],
-      })
-    }
-
-    setLoadedEvents(events)
-  }, [data])
+  //const { data, error } = useSWR(
+  //  'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
+  //)
 
   //useEffect(() => {
-  //  const fetchData = async () => {
-  //    try {
-  //      const response = await fetch(
-  //        'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
-  //      )
-  //      const data = await response.json()
+  //  if (!data) return
 
-  //      const events: Event[] = []
+  //  const events: Event[] = []
 
-  //      for (const key in data) {
-  //        events.push({
-  //          id: key,
-  //          ...data[key],
-  //        })
-  //      }
-
-  //      setLoadedEvents(events)
-  //    } catch {
-  //      setIsError(true)
-  //    }
+  //  for (const key in data) {
+  //    events.push({
+  //      id: key,
+  //      ...data[key],
+  //    })
   //  }
-  //  fetchData()
-  //}, [])
+
+  //  setLoadedEvents(events)
+  //}, [data])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
+        )
+        const data = await response.json()
+
+        const events: Event[] = []
+
+        for (const key in data) {
+          events.push({
+            id: key,
+            ...data[key],
+          })
+        }
+
+        setLoadedEvents(events)
+      } catch {
+        setIsError(true)
+      }
+    }
+    fetchData()
+  }, [])
 
   if (!loadedEvents) {
     return <p className='center'>Loading...</p>
