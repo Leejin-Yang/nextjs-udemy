@@ -122,3 +122,40 @@ Components는 프로퍼티에서 수신되는데, 렌더링되어야 하는 페�
 \_app.js에 Head를 추가했고 페이지 컴포넌트에도 Head가 남아있다. 두 Head 모두 적용된 것을 볼 수 있는데, Nextjs는 여러 Head 요소를 알아서 병합해 준다. 하나의 컴포넌트에서 두 개의 타이틀이 있을 때 충돌을 해결해 하나의 타이틀만 나오게 된다. 같은 요소가 여럿 있다면 최근 요소만 반영한다 (맨 아래 요소).
 
 그렇기에 \_app.js에 모든 요소에 통용될 타이틀이나 메타데이터를 설정할 수 있다. 이 데이터는 페이지 고유 데이터로 덮어쓸 수 있고, 고유 데이터가 없을 시 이 통용 데이터가 들어갈 것이다. 페이지 컴포넌트는 app 컴포넌트보다 나중에 렌더링되므로 페이지 컴포넌트의 Head가 표시되는 것이다.
+
+<br>
+
+### \_document.js
+
+\_app.js 파일로만 전반적인 앱 설정을 할 수 있는 건 아니다. `_document.js`
+
+\_app.js는 앱의 shell이다. HTML 문서의 body 속 root 컴포넌트라고 생각하면 된다. \_document.js는 전체 HTML 문서를 구성하는 모든 요소를 커스터마이징 할 수 있게 해준다.
+
+**_클래스 컴포넌트로 작성해야한다. Nextjs가 제공하는 일부 구성요소 확장이 필요하기 때문에_**
+
+```tsx
+import Document, { Html, Head, Main, NextScript } from 'next/document'
+// 여기서 Head는 next/head의 Head가 아니다!!
+
+// 기본 구조
+// 오버라이드하려면 해당 구조를 다시 만들어야 한다.
+class MyDocument extends Document {
+  render() {
+    return (
+      <Html>
+        <Head />
+        <body>
+          <Main />
+          <NextScript />
+        </body>
+      </Html>
+    )
+  }
+}
+
+export default MyDocument
+```
+
+next/head의 Head는 렌더링된 페이지의 Head 콘텐츠를 조정하기 위해 jsx 코드 어디서나 사용된다. next/document의 Head는 \_document.js에서만 사용된다.
+
+Nextjs의 앱은 Main 컴포넌트에 의해 렌더링된다. 모달 같은 추가 요소를 더할 때 이 파일에서 div를 추가하던지 할 수 있다. 전체 HTML 문서를 편집해야 한다면 \_document.js를 생성해 추가 작업하면 된다.
