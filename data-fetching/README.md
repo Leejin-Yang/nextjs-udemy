@@ -450,3 +450,57 @@ const LastSalesPage = () => {
 	...
 }
 ```
+
+getStaticProps에서 fetch 앞에 return을 붙여 전체 프로미스 체인을 반환한다. 모든 단계 및 최종 데이터를 가지는 전체 프로미스가 getStaticProps로 반환되도록 한다. 다른 방법으로는 await 키워드를 사용한다.
+
+```tsx
+export const getStaticProps: GetStaticProps = async () => {
+  return fetch(
+    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/sales.json'
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      // data는 객체의 형태로 오기에 배열로 transform 해준다.
+      // data === {s1: {}, s2: {}}
+      const transformedSales = []
+
+      for (const key in data) {
+        transformedSales.push({
+          id: key,
+          userName: data[key].userName,
+          volume: data[key].volume,
+        })
+      }
+
+      return {
+        props: { sales: transformedSales },
+        revalidate: 10,
+      }
+    })
+}
+```
+
+```tsx
+export const getStaticProps: GetStaticProps = async () => {
+  const response = await fetch(
+    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/sales.json'
+  )
+  const data = await response.json()
+  const transformedSales = []
+
+  for (const key in data) {
+    transformedSales.push({
+      id: key,
+      userName: data[key].userName,
+      volume: data[key].volume,
+    })
+  }
+
+  return {
+    props: { sales: transformedSales },
+    revalidate: 10,
+  }
+}
+```
+
+props로 받아온 sales를 useState의 기본값으로 설정. 훅을 이용해 데이터 fetching. useEffect로 상태 업데이트. 데이터를 추가했을 때 추가한 데이터는 페이지 소스에서 볼 수 없다. 왜냐하면 클라이언트 사이드에서 데이터 fetching이 이루어졌기 때문이다. 시작부터 일부 데이터를 가지게 한 다음 브라우저 내부에서 업데이트 하는 선택지도 있다.
