@@ -186,3 +186,11 @@ export async function getFeaturedEvents() {
   return allEvents.filter((event) => event.isFeatured)
 }
 ```
+
+<br>
+
+### Event Detail Page (동적 페이지)
+
+이벤트 디테일 페이지는 검색 엔진을 생각하면 홈페이지보다 더 중요하다. 이벤트에 대한 모든 세부사항을 가지고 있는 싱글 페이지이다. 처음부터 데이터가 있어야 한다. getStaticProps
+
+이런 페이지는 늘 변경되는 사용자 특정 데이터를 필요로 하는 페이지가 아니기 때문이다. 동적 페이지기 때문에 getStaticPaths를 함께 사용한다. 어떤 eventId에 대해 페이지를 사전 렌더링할 지 결정한다.
