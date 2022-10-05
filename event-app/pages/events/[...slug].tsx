@@ -60,15 +60,32 @@ const FilteredEventsPage = () => {
     fetchData()
   }, [])
 
-  if (!loadedEvents) {
-    return <p className='center'>Loading...</p>
-  }
-
   const filteredYear = filterData[0]
   const filteredMonth = filterData[1]
 
   const numberYear = Number(filteredYear)
   const numberMonth = Number(filteredMonth)
+
+  const pageHeadData = (
+    <Head>
+      <title>
+        Filtered Events {numberMonth}/{numberYear} | NextEvents
+      </title>
+      <meta
+        name='description'
+        content={`All events for ${numberMonth}/${numberYear}`}
+      />
+    </Head>
+  )
+
+  if (!loadedEvents) {
+    return (
+      <>
+        {pageHeadData}
+        <p className='center'>Loading...</p>
+      </>
+    )
+  }
 
   const isValidYear = numberYear >= 2021 && numberYear <= 2030
   const isValidMonth = numberMonth >= 1 && numberMonth <= 12
@@ -82,6 +99,7 @@ const FilteredEventsPage = () => {
   ) {
     return (
       <>
+        {pageHeadData}
         <ErrorAlert>
           <p>Invalid filter. Please adjust your values!</p>
         </ErrorAlert>
@@ -103,6 +121,7 @@ const FilteredEventsPage = () => {
   if (!filteredEvents || filteredEvents.length === 0) {
     return (
       <>
+        {pageHeadData}
         <ErrorAlert>
           <p>No events found for the chosen filter!</p>
         </ErrorAlert>
@@ -117,15 +136,7 @@ const FilteredEventsPage = () => {
 
   return (
     <>
-      <Head>
-        <title>
-          Filtered Events {numberMonth}/{numberYear} | NextEvents
-        </title>
-        <meta
-          name='description'
-          content={`All events for ${numberMonth}/${numberYear}`}
-        />
-      </Head>
+      {pageHeadData}
       <ResultsTitle date={selectedDate} />
       <EventList events={filteredEvents} />
     </>

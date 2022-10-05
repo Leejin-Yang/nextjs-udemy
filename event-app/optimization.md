@@ -65,3 +65,30 @@ const EventDetailPage = ({ event }: Props) => {
 ```
 
 클라이언트 사이드 데이터 fetching한 페이지에서는 페이지 소스에서 타이틀과 메타데이터를 확인할 수 없다. 조건문을 모두 통과하고 반환되는 메인 콘텐츠에만 추가되었기 때문이다. 모든 분기점에 추가할 수 있지만, 비효율적이다. 모든 페이지에 나오는 일반 head 콘텐츠를 설정하고 싶다면 어떻게 해야할까? 모든 페이지에 넣어주는 대신 논리 및 구성을 재활용 해서 사용할 수 있다.
+
+컴포넌트 내부에서 선언해 if문마다 추가해준다. 반복되는 코드를 묶어주는 과정.
+
+```tsx
+const pageHeadData = (
+  <Head>
+    <title>
+      Filtered Events {numberMonth}/{numberYear} | NextEvents
+    </title>
+    <meta
+      name='description'
+      content={`All events for ${numberMonth}/${numberYear}`}
+    />
+  </Head>
+)
+
+if (!loadedEvents) {
+  return (
+    <>
+      {pageHeadData}
+      <p className='center'>Loading...</p>
+    </>
+  )
+}
+```
+
+컴포넌트 내부에서 재사용하는 것 말고 모든 페이지에 동일한 콘텐츠를 추가할 때 사용하는 방법. 별도의 컴포넌트로 빼고 모든 컴포넌트에 import해서 사용할 수 있지만 다른 방법도 있다.
