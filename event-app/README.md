@@ -194,3 +194,13 @@ export async function getFeaturedEvents() {
 이벤트 디테일 페이지는 검색 엔진을 생각하면 홈페이지보다 더 중요하다. 이벤트에 대한 모든 세부사항을 가지고 있는 싱글 페이지이다. 처음부터 데이터가 있어야 한다. getStaticProps
 
 이런 페이지는 늘 변경되는 사용자 특정 데이터를 필요로 하는 페이지가 아니기 때문이다. 동적 페이지기 때문에 getStaticPaths를 함께 사용한다. 어떤 eventId에 대해 페이지를 사전 렌더링할 지 결정한다.
+
+<br>
+
+### Data Fetching 최적화
+
+HomePage의 경우 pre-fetch된 데이터로 사전 생성되었지만, 데이터 업데이트를 위해서는 다시 build해야 한다. 한가지 해결책으로는 getServerSideProps가 있다. 하지만 이 페이지에서는 과한 방법이다. 모든 요청에 대해 사전 생성할 필요가 없기 때문이다. revalidate가 좀 더 나은 방법.
+
+Event Detail Page에서도 비슷하게 사용할 수 있다. 혹은 SSR을 사용하거나 클라이언트 사이드 데이터 fetching을 사용하여 초기 데이터를 가진 상태에서 업데이트를 해준다.
+
+getStaticPath 만약 데이터의 개수가 무수히 많다면 전부 사전 생성하는 건 큰 낭비이다. 주요 이벤트만 pre-rendering. 이런 경우에는 일부 이벤트에 대해 사전 생성되지 않는다. fallback 값을 수정해주어야 한다. fallback을 true로 설정하면 Loading 표기, blocking으로 설정하면 페이지가 생성될 때까지 Nextjs는 아무것도 하지 않는다.

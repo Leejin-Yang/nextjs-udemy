@@ -3,7 +3,7 @@ import { GetStaticPaths, GetStaticProps } from 'next'
 import EventContent from '../../components/eventDetail/eventContent'
 import EventLogistics from '../../components/eventDetail/eventLogistics'
 import EventSummary from '../../components/eventDetail/eventSummary'
-import { Event, getAllEvents, getEventById } from '../../services/events'
+import { Event, getEventById, getFeaturedEvents } from '../../services/events'
 
 interface Props {
   event: Event
@@ -29,12 +29,12 @@ const EventDetailPage = ({ event }: Props) => {
 export default EventDetailPage
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const allEvents = await getAllEvents()
+  const allEvents = await getFeaturedEvents()
   const paths = allEvents.map((event) => ({ params: { eventId: event.id } }))
 
   return {
     paths,
-    fallback: false,
+    fallback: 'blocking',
   }
 }
 
@@ -50,5 +50,6 @@ export const getStaticProps: GetStaticProps = async (context) => {
 
   return {
     props: { event },
+    revalidate: 30,
   }
 }
