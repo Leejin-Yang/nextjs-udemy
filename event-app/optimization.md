@@ -159,3 +159,31 @@ export default MyDocument
 next/head의 Head는 렌더링된 페이지의 Head 콘텐츠를 조정하기 위해 jsx 코드 어디서나 사용된다. next/document의 Head는 \_document.js에서만 사용된다.
 
 Nextjs의 앱은 Main 컴포넌트에 의해 렌더링된다. 모달 같은 추가 요소를 더할 때 이 파일에서 div를 추가하던지 할 수 있다. 전체 HTML 문서를 편집해야 한다면 \_document.js를 생성해 추가 작업하면 된다.
+
+<br>
+
+## Next Image
+
+[https://nextjs.org/docs/api-reference/next/image](https://nextjs.org/docs/api-reference/next/image)
+
+현제 앱에서는 이미지가 최적화 되어 있지 않다. 원본 그래도 fetching 되어 용량이 크고 확장자도 jpeg 그대로 들어온다. 이미지가 크면 프로덕션에서 큰 문제가 된다. Nextjs가 프로덕션을 위한 React 프레임워크인 만큼 간단하게 이미지를 최적화 할 수 있는 방법을 제공한다.
+
+```tsx
+import Image from 'next/image'
+```
+
+img 태그 대신 사용한다. 이 컴포넌트를 사용하면 여러 버전의 이미지를 요청이 들어올 때마다 바로바로 생성해준다. 각 운영 체제와 장치 크기에 맞게 최적화! 그리고 이미지들은 캐시되고 유사한 장치에 들어올 때 활용할수 있다.
+
+기존 src, alt와 더불어 width와 height를 추가해준다. 이 특성을 설정해 줘야 Nextjs에서 이미지를 처리할 때 어떤 크기로 처리할 지 설정할 수 있다. 즉 페이지에 표시하고자 하는 크기를 말하는 것이다.
+
+width와 height를 정할 때 css 속성을 참고해 고려해야 한다.
+
+```tsx
+<Image src={`/${image}`} alt={title} width={250} height={160} />
+```
+
+hard reload하고 개발자도구 네트워크 탭에서 보면 이미지의 크기가 줄어든 것을 볼 수 있다. 그리고 chrome에 최적화된 webp로 확장자가 변경되었다. 생성된 이미지는 .next 폴더에 저장되어 있다 (.next/cache/images). 이 이미지는 필요할 때마다 최적화되어 생성되는 것으로 요청이 있을 때 생성하고 저장해 두었다가 유사한 기기에서 요청이 들어올 때 이미지를 꺼내서 렌더링하는 방식이다.
+
+크기 최적화 외에도 또 중요한 것은 생성된 이미지 그 자체이다(이미지 컴포넌트). 화면을 줄이고 화면을 다시 넓혔을 때 이미지에 대한 새로운 요청이 들어온 것을 볼 수 있다. 기본 이미지가 lazy load되기 때문이다. 보이지 않는 상태에서는 Nextjs가 다운로드 하지 않는다. **_필요할 때만 로딩!_**
+
+프로덕션 단계에서 필요한 이미지를 생성해주고 그 이미지를 상세 페이지에서도 사용할 수 있다. width와 height를 설정해도 실제 크기는 css 스타일이 우선으로 적용된다. 여기서 설정한 값은 사용자 화면에서 fetch 해오는 크기일 뿐이다.

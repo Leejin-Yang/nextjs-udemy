@@ -2,6 +2,7 @@ import AddressIcon from '../svgs/addressIcon'
 import DateIcon from '../svgs/dateIcon'
 import LogisticsItem from './logisticsItem'
 import styles from './eventLogistics.module.css'
+import Image from 'next/image'
 
 interface Props {
   date: string
@@ -21,7 +22,7 @@ function EventLogistics({ date, address, image, imageAlt }: Props) {
   return (
     <section className={styles.logistics}>
       <div className={styles.image}>
-        <img src={`/${image}`} alt={imageAlt} />
+        <Image src={`/${image}`} alt={imageAlt} width={400} height={400} />
       </div>
       <ul className={styles.list}>
         <LogisticsItem icon={DateIcon}>
