@@ -92,3 +92,33 @@ if (!loadedEvents) {
 ```
 
 컴포넌트 내부에서 재사용하는 것 말고 모든 페이지에 동일한 콘텐츠를 추가할 때 사용하는 방법. 별도의 컴포넌트로 빼고 모든 컴포넌트에 import해서 사용할 수 있지만 다른 방법도 있다.
+
+<br>
+
+### \_app.js
+
+표시되는 모든 페이지에서 렌더링되는 경로 애플리케이션 컴포넌트이다.
+
+```tsx
+import '../styles/globals.css'
+import type { AppProps } from 'next/app'
+import Layout from '../components/layout/layout'
+
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <Layout>
+      <Component {...pageProps} />
+    </Layout>
+  )
+}
+
+export default MyApp
+```
+
+Components는 프로퍼티에서 수신되는데, 렌더링되어야 하는 페이지 컴포넌트이다. MyApp은 Nextjs에 의해 렌더링되고, Component 프로퍼티는 Nextjs에 의해 자동으로 설정된다. 페이지 콘텐츠를 다른 컴포넌트로 wrapping할 때 \_app.js 파일을 활용할 수 있다.
+
+반응형 페이지의 스케일을 적정값으로 만드는데 자주 쓰이는 태그
+
+\_app.js에 Head를 추가했고 페이지 컴포넌트에도 Head가 남아있다. 두 Head 모두 적용된 것을 볼 수 있는데, Nextjs는 여러 Head 요소를 알아서 병합해 준다. 하나의 컴포넌트에서 두 개의 타이틀이 있을 때 충돌을 해결해 하나의 타이틀만 나오게 된다. 같은 요소가 여럿 있다면 최근 요소만 반영한다 (맨 아래 요소).
+
+그렇기에 \_app.js에 모든 요소에 통용될 타이틀이나 메타데이터를 설정할 수 있다. 이 데이터는 페이지 고유 데이터로 덮어쓸 수 있고, 고유 데이터가 없을 시 이 통용 데이터가 들어갈 것이다. 페이지 컴포넌트는 app 컴포넌트보다 나중에 렌더링되므로 페이지 컴포넌트의 Head가 표시되는 것이다.
