@@ -204,3 +204,17 @@ HomePage의 경우 pre-fetch된 데이터로 사전 생성되었지만, 데이�
 Event Detail Page에서도 비슷하게 사용할 수 있다. 혹은 SSR을 사용하거나 클라이언트 사이드 데이터 fetching을 사용하여 초기 데이터를 가진 상태에서 업데이트를 해준다.
 
 getStaticPath 만약 데이터의 개수가 무수히 많다면 전부 사전 생성하는 건 큰 낭비이다. 주요 이벤트만 pre-rendering. 이런 경우에는 일부 이벤트에 대해 사전 생성되지 않는다. fallback 값을 수정해주어야 한다. fallback을 true로 설정하면 Loading 표기, blocking으로 설정하면 페이지가 생성될 때까지 Nextjs는 아무것도 하지 않는다.
+
+<br>
+
+### Filtered Event Page
+
+매개변수 조합이 다양할 수 밖에 없다. getStaticPath를 이용해 사전 생성할 수 있지만, 어떤 페이지를 사전 생성할지 어떻게 정할 수 있을까? 기준을 정하기 어렵다. getStaticProps가 적합하지 않을 수도 있다. getServerSideProps
+
+들어오는 모든 요청에 대해 즉시 데이터를 fetching해서 해당 요청에 대한 페이지를 반환할 수 있게 해준다. 유입된 모든 요청에 따라 즉시 pre-rendering 되는 페이지이다.
+
+date 객체를 return 했을 때 다음과 같은 오류가 떴다.
+
+> **Please only return JSON serializable data types.**
+
+JSON으로 변환 가능한 타입을 리턴해야한다.
