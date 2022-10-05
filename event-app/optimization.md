@@ -34,3 +34,34 @@ const HomePage = ({ events }: Props) => {
   )
 }
 ```
+
+<br>
+
+### 동적 페이지에서 Head
+
+동적 콘텐츠도 삽입할 수 있다.
+
+```tsx
+const EventDetailPage = ({ event }: Props) => {
+  return (
+    <>
+      <Head>
+        <title>{event.title} | NextEvents</title>
+        <meta name='description' content={event.description} />
+      </Head>
+      <EventSummary title={event.title} />
+      <EventLogistics
+        date={event.date}
+        address={event.location}
+        image={event.image}
+        imageAlt={event.title}
+      />
+      <EventContent>
+        <p>{event.description}</p>
+      </EventContent>
+    </>
+  )
+}
+```
+
+클라이언트 사이드 데이터 fetching한 페이지에서는 페이지 소스에서 타이틀과 메타데이터를 확인할 수 없다. 조건문을 모두 통과하고 반환되는 메인 콘텐츠에만 추가되었기 때문이다. 모든 분기점에 추가할 수 있지만, 비효율적이다. 모든 페이지에 나오는 일반 head 콘텐츠를 설정하고 싶다면 어떻게 해야할까? 모든 페이지에 넣어주는 대신 논리 및 구성을 재활용 해서 사용할 수 있다.

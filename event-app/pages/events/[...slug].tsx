@@ -1,3 +1,4 @@
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 //import useSWR from 'swr'
@@ -116,6 +117,15 @@ const FilteredEventsPage = () => {
 
   return (
     <>
+      <Head>
+        <title>
+          Filtered Events {numberMonth}/{numberYear} | NextEvents
+        </title>
+        <meta
+          name='description'
+          content={`All events for ${numberMonth}/${numberYear}`}
+        />
+      </Head>
       <ResultsTitle date={selectedDate} />
       <EventList events={filteredEvents} />
     </>
