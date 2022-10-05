@@ -1,11 +1,25 @@
+import { GetStaticProps } from 'next'
+
 import EventList from '../components/events/eventList'
-import EventSearch from '../components/events/eventSearch'
-import { getFeaturedEvents } from '../data/dummy-data'
+import { Event, getFeaturedEvents } from '../services/events'
 
-const HomePage = () => {
-  const featuredEvents = getFeaturedEvents()
+interface Props {
+  events: Event[]
+}
 
-  return <EventList events={featuredEvents} />
+const HomePage = ({ events }: Props) => {
+  return <EventList events={events} />
 }
 
 export default HomePage
+
+export const getStaticProps: GetStaticProps = async () => {
+  const featuredEvents = await getFeaturedEvents()
+
+  return {
+    props: {
+      events: featuredEvents,
+    },
+    revalidate: 1800,
+  }
+}

@@ -35,7 +35,6 @@ CSS 모듈 기능을 이용하면 본 CSS 파일에서 할당된 클래스명이
 
 ```tsx
 import styles from './eventItem.module.css'
-
 ;<li className={styles.item}>itme</li>
 ```
 
@@ -138,3 +137,94 @@ ref 타입 오류
 [https://zerodice0.tistory.com/244](https://zerodice0.tistory.com/244)
 
 초기값으로 null
+
+<br>
+
+## With Data Fetching
+
+### HomePage
+
+검색 엔진 최적화, 데이터가 짧은 시간에 여러번 바뀔 가능성 적다. 클라이언트 사이드에서 페이지를 로드할 이유가 없다. 그렇다면 getServerSideProps를 이용해 모든 요청에 대해서 페이지를 즉시 서버에서 pre-rendering 할 것인지, 아니면 getStaticProps를 이용해 대부분의 페이지가 업데이트되도록 특정값에 유효성 재검사를 하면 빌드 프로세스 중 또는 잠재적으로 서버상에서 페이지가 pre-rendering 되도록 해야할까? 모든 요청에 대해 사전 렌더링 할 필요가 없다. getStaticProps
+
+firebase에서 데이터를 가져온다. 어떻게 필터링을 할 수 있을까? 쿼리 파라미터와 함께 전송되는 HTTP 요청을 조정할 수 있다.
+
+[https://firebase.google.com/docs/database/admin/retrieve-data](https://firebase.google.com/docs/database/admin/retrieve-data)
+
+firebase 과정이 아니니 전체 데이터를 가져와 js에서 작업하는 유틸 함수를 작성한다.
+
+```tsx
+export interface Event {
+  id: string
+  title: string
+  description: string
+  location: string
+  date: string
+  image: string
+  isFeatured: boolean
+}
+
+export async function getAllEvents() {
+  const response = await fetch(
+    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
+  )
+  const data = await response.json()
+
+  const events: Event[] = []
+
+  for (const key in data) {
+    events.push({
+      id: key,
+      ...data[key],
+    })
+  }
+
+  return events
+}
+
+export async function getFeaturedEvents() {
+  const allEvents = await getAllEvents()
+  return allEvents.filter((event) => event.isFeatured)
+}
+```
+
+<br>
+
+### Event Detail Page (동적 페이지)
+
+이벤트 디테일 페이지는 검색 엔진을 생각하면 홈페이지보다 더 중요하다. 이벤트에 대한 모든 세부사항을 가지고 있는 싱글 페이지이다. 처음부터 데이터가 있어야 한다. getStaticProps
+
+이런 페이지는 늘 변경되는 사용자 특정 데이터를 필요로 하는 페이지가 아니기 때문이다. 동적 페이지기 때문에 getStaticPaths를 함께 사용한다. 어떤 eventId에 대해 페이지를 사전 렌더링할 지 결정한다.
+
+<br>
+
+### Data Fetching 최적화
+
+HomePage의 경우 pre-fetch된 데이터로 사전 생성되었지만, 데이터 업데이트를 위해서는 다시 build해야 한다. 한가지 해결책으로는 getServerSideProps가 있다. 하지만 이 페이지에서는 과한 방법이다. 모든 요청에 대해 사전 생성할 필요가 없기 때문이다. revalidate가 좀 더 나은 방법.
+
+Event Detail Page에서도 비슷하게 사용할 수 있다. 혹은 SSR을 사용하거나 클라이언트 사이드 데이터 fetching을 사용하여 초기 데이터를 가진 상태에서 업데이트를 해준다.
+
+getStaticPath 만약 데이터의 개수가 무수히 많다면 전부 사전 생성하는 건 큰 낭비이다. 주요 이벤트만 pre-rendering. 이런 경우에는 일부 이벤트에 대해 사전 생성되지 않는다. fallback 값을 수정해주어야 한다. fallback을 true로 설정하면 Loading 표기, blocking으로 설정하면 페이지가 생성될 때까지 Nextjs는 아무것도 하지 않는다.
+
+<br>
+
+### Filtered Event Page
+
+매개변수 조합이 다양할 수 밖에 없다. getStaticPath를 이용해 사전 생성할 수 있지만, 어떤 페이지를 사전 생성할지 어떻게 정할 수 있을까? 기준을 정하기 어렵다. getStaticProps가 적합하지 않을 수도 있다. getServerSideProps
+
+들어오는 모든 요청에 대해 즉시 데이터를 fetching해서 해당 요청에 대한 페이지를 반환할 수 있게 해준다. 유입된 모든 요청에 따라 즉시 pre-rendering 되는 페이지이다.
+
+date 객체를 return 했을 때 다음과 같은 오류가 떴다.
+
+> **Please only return JSON serializable data types.**
+
+JSON으로 변환 가능한 타입을 리턴해야한다.
+
+<br>
+
+### Client-side Data Fetching
+
+이 앱에서는 필요 없을 수 있다. 하지만 수행해도 괜찮은 페이지(filter page)가 있어 한번 적용해본다. getServerSideProps가 있지만 client-side data fetching을 사용해도 괜찮을 것 같다. 페이지가 전보다 더 빨리 뜨지만 처음에는 데이터가 없다. 해당 페이지로 빠르게 이동하는 것이 더 중요하기 때문에 그리고 검색 엔진 최적화에 중요한 페이지가 아니기 때문에 고려해 볼 수 있다.
+
+getStaticProps와 클라이언트 사이드 데이터 fetching은 양립할 수 있지만 (사전 렌더링을 수행한 페이지를 불러와서 업데이트 하는 경우), getServerSideProps와는 그럴 수 없다. 새로운 요청마다 getServerSideProps 함수가 실행되기 때문이다. 요청 헤더를 분석해야할 필요가 있는 상황이 아니라면 다르긴 하지만… 지금은 그럴 필요가 없기 때문에 지워준다.
+
+**_상황에 맞는 데이터 fetching 기법을 사용하자!_**

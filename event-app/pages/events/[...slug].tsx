@@ -1,15 +1,65 @@
 import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+import useSWR from 'swr'
+
 import Button from '../../components/common/button'
 import ErrorAlert from '../../components/common/errorAlert'
 import EventList from '../../components/events/eventList'
 import ResultsTitle from '../../components/events/resultsTitle'
-import { getFilteredEvents } from '../../data/dummy-data'
+import type { Event } from '../../services/events'
 
 const FilteredEventsPage = () => {
-  const router = useRouter()
-  const filterData = router.query.slug
+  const [loadedEvents, setLoadedEvents] = useState<Event[]>()
+  const [isError, setIsError] = useState(false)
 
-  if (!filterData) {
+  const router = useRouter()
+  const filterData = router.query.slug as string[]
+
+  const { data, error } = useSWR(
+    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
+  )
+
+  useEffect(() => {
+    if (!data) return
+
+    const events: Event[] = []
+
+    for (const key in data) {
+      events.push({
+        id: key,
+        ...data[key],
+      })
+    }
+
+    setLoadedEvents(events)
+  }, [data])
+
+  //useEffect(() => {
+  //  const fetchData = async () => {
+  //    try {
+  //      const response = await fetch(
+  //        'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
+  //      )
+  //      const data = await response.json()
+
+  //      const events: Event[] = []
+
+  //      for (const key in data) {
+  //        events.push({
+  //          id: key,
+  //          ...data[key],
+  //        })
+  //      }
+
+  //      setLoadedEvents(events)
+  //    } catch {
+  //      setIsError(true)
+  //    }
+  //  }
+  //  fetchData()
+  //}, [])
+
+  if (!loadedEvents) {
     return <p className='center'>Loading...</p>
   }
 
@@ -26,7 +76,8 @@ const FilteredEventsPage = () => {
     isNaN(numberYear) ||
     isNaN(numberMonth) ||
     !isValidYear ||
-    !isValidMonth
+    !isValidMonth ||
+    isError
   ) {
     return (
       <>
@@ -40,9 +91,12 @@ const FilteredEventsPage = () => {
     )
   }
 
-  const filteredEvents = getFilteredEvents({
-    year: numberYear,
-    month: numberMonth,
+  const filteredEvents = loadedEvents.filter((event) => {
+    const eventDate = new Date(event.date)
+    return (
+      eventDate.getFullYear() === numberYear &&
+      eventDate.getMonth() === numberMonth - 1
+    )
   })
 
   if (!filteredEvents || filteredEvents.length === 0) {
@@ -58,11 +112,11 @@ const FilteredEventsPage = () => {
     )
   }
 
-  const date = new Date(numberYear, numberMonth - 1)
+  const selectedDate = new Date(numberYear, numberMonth - 1)
 
   return (
     <>
-      <ResultsTitle date={date} />
+      <ResultsTitle date={selectedDate} />
       <EventList events={filteredEvents} />
     </>
   )
