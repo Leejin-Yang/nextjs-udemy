@@ -218,3 +218,13 @@ date 객체를 return 했을 때 다음과 같은 오류가 떴다.
 > **Please only return JSON serializable data types.**
 
 JSON으로 변환 가능한 타입을 리턴해야한다.
+
+<br>
+
+### Client-side Data Fetching
+
+이 앱에서는 필요 없을 수 있다. 하지만 수행해도 괜찮은 페이지(filter page)가 있어 한번 적용해본다. getServerSideProps가 있지만 client-side data fetching을 사용해도 괜찮을 것 같다. 페이지가 전보다 더 빨리 뜨지만 처음에는 데이터가 없다. 해당 페이지로 빠르게 이동하는 것이 더 중요하기 때문에 그리고 검색 엔진 최적화에 중요한 페이지가 아니기 때문에 고려해 볼 수 있다.
+
+getStaticProps와 클라이언트 사이드 데이터 fetching은 양립할 수 있지만 (사전 렌더링을 수행한 페이지를 불러와서 업데이트 하는 경우), getServerSideProps와는 그럴 수 없다. 새로운 요청마다 getServerSideProps 함수가 실행되기 때문이다. 요청 헤더를 분석해야할 필요가 있는 상황이 아니라면 다르긴 하지만… 지금은 그럴 필요가 없기 때문에 지워준다.
+
+**_상황에 맞는 데이터 fetching 기법을 사용하자!_**

@@ -1,59 +1,67 @@
-import { GetServerSideProps } from 'next'
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+import useSWR from 'swr'
 
 import Button from '../../components/common/button'
 import ErrorAlert from '../../components/common/errorAlert'
 import EventList from '../../components/events/eventList'
 import ResultsTitle from '../../components/events/resultsTitle'
-import { Event, getFilteredEvents } from '../../services/events'
+import type { Event } from '../../services/events'
 
-interface Props {
-  events?: Event[]
-  date?: { year: number; month: number }
-  hasError?: true
-}
+const FilteredEventsPage = () => {
+  const [loadedEvents, setLoadedEvents] = useState<Event[]>()
+  const [isError, setIsError] = useState(false)
 
-const FilteredEventsPage = ({ events, date, hasError }: Props) => {
-  if (hasError) {
-    return (
-      <>
-        <ErrorAlert>
-          <p>Invalid filter. Please adjust your values!</p>
-        </ErrorAlert>
-        <div className='center'>
-          <Button link='/events'>Show All Events</Button>
-        </div>
-      </>
-    )
-  }
+  const router = useRouter()
+  const filterData = router.query.slug as string[]
 
-  if (!events || events.length === 0 || !date) {
-    return (
-      <>
-        <ErrorAlert>
-          <p>No events found for the chosen filter!</p>
-        </ErrorAlert>
-        <div className='center'>
-          <Button link='/events'>Show All Events</Button>
-        </div>
-      </>
-    )
-  }
-
-  const selectedDate = new Date(date.year, date.month - 1)
-
-  return (
-    <>
-      <ResultsTitle date={selectedDate} />
-      <EventList events={events} />
-    </>
+  const { data, error } = useSWR(
+    'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
   )
-}
 
-export default FilteredEventsPage
+  useEffect(() => {
+    if (!data) return
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { params } = context
-  const filterData = params?.slug as string[]
+    const events: Event[] = []
+
+    for (const key in data) {
+      events.push({
+        id: key,
+        ...data[key],
+      })
+    }
+
+    setLoadedEvents(events)
+  }, [data])
+
+  //useEffect(() => {
+  //  const fetchData = async () => {
+  //    try {
+  //      const response = await fetch(
+  //        'https://nextjs-udemy-ed3f6-default-rtdb.firebaseio.com/events.json'
+  //      )
+  //      const data = await response.json()
+
+  //      const events: Event[] = []
+
+  //      for (const key in data) {
+  //        events.push({
+  //          id: key,
+  //          ...data[key],
+  //        })
+  //      }
+
+  //      setLoadedEvents(events)
+  //    } catch {
+  //      setIsError(true)
+  //    }
+  //  }
+  //  fetchData()
+  //}, [])
+
+  if (!loadedEvents) {
+    return <p className='center'>Loading...</p>
+  }
 
   const filteredYear = filterData[0]
   const filteredMonth = filterData[1]
@@ -68,26 +76,50 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     isNaN(numberYear) ||
     isNaN(numberMonth) ||
     !isValidYear ||
-    !isValidMonth
+    !isValidMonth ||
+    isError
   ) {
-    return {
-      props: { hasError: true },
-      //notFound: true,
-      //redirect: {
-      //  destination: '/error',
-      //},
-    }
+    return (
+      <>
+        <ErrorAlert>
+          <p>Invalid filter. Please adjust your values!</p>
+        </ErrorAlert>
+        <div className='center'>
+          <Button link='/events'>Show All Events</Button>
+        </div>
+      </>
+    )
   }
 
-  const filteredEvents = await getFilteredEvents({
-    year: numberYear,
-    month: numberMonth,
+  const filteredEvents = loadedEvents.filter((event) => {
+    const eventDate = new Date(event.date)
+    return (
+      eventDate.getFullYear() === numberYear &&
+      eventDate.getMonth() === numberMonth - 1
+    )
   })
 
-  return {
-    props: {
-      events: filteredEvents,
-      date: { year: numberYear, month: numberMonth },
-    },
+  if (!filteredEvents || filteredEvents.length === 0) {
+    return (
+      <>
+        <ErrorAlert>
+          <p>No events found for the chosen filter!</p>
+        </ErrorAlert>
+        <div className='center'>
+          <Button link='/events'>Show All Events</Button>
+        </div>
+      </>
+    )
   }
+
+  const selectedDate = new Date(numberYear, numberMonth - 1)
+
+  return (
+    <>
+      <ResultsTitle date={selectedDate} />
+      <EventList events={filteredEvents} />
+    </>
+  )
 }
+
+export default FilteredEventsPage
