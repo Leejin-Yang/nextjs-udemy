@@ -321,3 +321,12 @@ export default FeedbackPage
 bind를 통해 함수를 미리 구성하게 해준다. 함수가 아직 실행되지는 않고 나중 실행을 위해 구성만 미리 하는 것. 예를 들어 수신될 파라미터 값을 미리 구성하는 것이다. 첫번째 인자는 함수 내부의 키워드 값, 두번째는 해당 함수에서 수신할 첫번째 인수
 
 [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind)
+
+<br>
+
+## API Route 파일 구조화 방법
+
+- catch-all: […params].ts 일반 페이지와 동일하다.
+- 동적 파일과 아닌 것에서 우선순위를 정할 때 보다 구체적인 페이지가 있다면 그 파일을 이용한다.
+  - /api/feedback은 [feedbackId].ts 파일이 아닌 feedback.ts 파일을 사용할 것이다.
+- 일반 페이지와 마찬가지로 폴더를 생성해서 사용할 수 있다. api/feedback.ts ⇒ api/feedback/index.ts

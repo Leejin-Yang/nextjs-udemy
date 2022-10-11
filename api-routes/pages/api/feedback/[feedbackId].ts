@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import { getFileData, getFilePath } from './feedback'
-import type { FeedbackData } from './feedback'
+import { getFileData, getFilePath } from '.'
+import type { FeedbackData } from '.'
 
 interface Data {
   message: string
