@@ -147,3 +147,25 @@ export default handler
 ```tsx
 res.status(201).json({ message: 'Success!', feedback: newFeedback })
 ```
+
+요청을 보내보자!
+
+[https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
+
+```tsx
+fetch('/api/feedback', {
+  method: 'POST',
+  body: JSON.stringify(reqBody),
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+```
+
+- url: /로 시작하는 것만으로 자동으로 도메인 주소 뒤에 붙어 절대 경로로 작용한다.
+- method: POST를 다루고 있으므로 POST
+- 요청에 첨부할 데이터는 body 프로퍼티에 담는다. 담을 때 JSON.stringify 해서 json으로 보낸다.
+- header에 추가적으로 정보를 담아 보낸다.
+  - json 데이터를 전송한다는 것을 알려주기 위해 ‘Content-Type’: ‘application/json’
+
+위에 생성한 객체를 통해 전송하는 요청에 메타데이터를 추가한다. json 데이터를 전달한다는 점을 백엔드의 API Route에 알린다.

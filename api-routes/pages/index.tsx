@@ -10,7 +10,19 @@ const Home = () => {
     const enteredEmail = emailInputRef.current?.value
     const enteredFeedback = feedbackInputRef.current?.value
 
-    // fetch() // { email: 'aaa@mail.com', feedback: 'some feedback' }
+    if (!enteredEmail || !enteredFeedback) return
+
+    const reqBody = { email: enteredEmail, feedback: enteredFeedback }
+
+    fetch('/api/feedback', {
+      method: 'POST',
+      body: JSON.stringify(reqBody),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
   }
 
   return (
