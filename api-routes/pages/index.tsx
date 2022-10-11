@@ -1,6 +1,9 @@
-import { FormEventHandler, useRef } from 'react'
+import { FormEventHandler, useRef, useState } from 'react'
+import type { FeedbackData } from './api/feedback'
 
 const Home = () => {
+  const [feedbackList, setFeedbackList] = useState<FeedbackData[]>([])
+
   const emailInputRef = useRef<HTMLInputElement>(null)
   const feedbackInputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -25,6 +28,14 @@ const Home = () => {
       .then((data) => console.log(data))
   }
 
+  const onLoadFeedbackClick = () => {
+    fetch('/api/feedback')
+      .then((res) => res.json())
+      .then((data) => {
+        setFeedbackList(data.feedback)
+      })
+  }
+
   return (
     <div>
       <h1>The Home Page</h1>
@@ -39,6 +50,15 @@ const Home = () => {
         </div>
         <button type='submit'>Send Feedback</button>
       </form>
+      <hr />
+      <button type='button' onClick={onLoadFeedbackClick}>
+        Load Feedback
+      </button>
+      <ul>
+        {feedbackList.map((item) => (
+          <li key={item.id}>{item.feedback}</li>
+        ))}
+      </ul>
     </div>
   )
 }

@@ -36,7 +36,7 @@ export default handler
 
 <br>
 
-### form 양식을 제출해보자!
+## form 양식을 제출해보자!
 
 프론트엔드 앱에서 DB로 전달해서는 안된다. 컴포넌트에 DB로 전달하는 js 코드를 추가한다면 DB 크리덴셜을 노출하면 보안면에서 매우 취약하다. 그래서 버튼 클릭 시 API Route에 요청을 전송하게 한다. API Route에서 DB로 연결하면 된다.
 
@@ -148,7 +148,9 @@ export default handler
 res.status(201).json({ message: 'Success!', feedback: newFeedback })
 ```
 
-요청을 보내보자!
+<br>
+
+### 요청을 보내보자!
 
 [https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
 
@@ -169,3 +171,31 @@ fetch('/api/feedback', {
   - json 데이터를 전송한다는 것을 알려주기 위해 ‘Content-Type’: ‘application/json’
 
 위에 생성한 객체를 통해 전송하는 요청에 메타데이터를 추가한다. json 데이터를 전달한다는 점을 백엔드의 API Route에 알린다.
+
+<br>
+
+### 데이터를 가져와보자!
+
+GET 요청을 통해 모든 데이터를 가져온다. feedback.ts 파일에 해당 코드를 추가한다.
+
+```tsx
+else {
+  const filePath = getFilePath() // 앞서 작성한 파일 경로 가져오는 함수
+  const data = getFileData(filePath) // 앞서 작성한 파일 가져오는 함수
+  res.status(200).json({ message: 'Success!', feedback: data })
+}
+```
+
+button 클릭으로 요청을 보내본다.
+
+```tsx
+const [feedbackList, setFeedbackList] = useState<FeedbackData[]>([])
+
+const onLoadFeedbackClick = () => {
+  fetch('/api/feedback')
+    .then((res) => res.json())
+    .then((data) => {
+      setFeedbackList(data.feedback)
+    })
+}
+```
