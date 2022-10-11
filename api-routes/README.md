@@ -225,3 +225,99 @@ export const getStaticProps: GetStaticProps = async () => {
   }
 }
 ```
+
+<br>
+
+## 동적 API Route
+
+특정 피드백 항목에 대한 단일 데이터 조각을 가져오기 위해서 `/api/feedback/:id`를 지원하고자 한다.
+
+일반 페이지에서 했던 것과 같이 `[feedbackId].ts`. 동적으로 들어오는 id를 가져오려면 어떻게 해야할까?
+
+```tsx
+import type { NextApiRequest, NextApiResponse } from 'next'
+
+function handler(req: NextApiRequest, res: NextApiResponse<any>) {
+  const feedbackId = req.query.feedbackId
+}
+
+export default handler
+```
+
+req 객체의 query 프로퍼티에서 찾을 수 있다. 그리고 파일을 가져와 동작을 진행하면 된다.
+
+```tsx
+import type { NextApiRequest, NextApiResponse } from 'next'
+
+import { getFileData, getFilePath } from './feedback'
+import type { FeedbackData } from './feedback'
+
+interface Data {
+  message: string
+  feedback: FeedbackData | null
+}
+
+function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+  if (req.method === 'DELETE') {
+    // 특정 id에 대해 DELETE 요청이 들어왔을 때
+  }
+
+  const feedbackId = req.query.feedbackId
+
+  const filePath = getFilePath()
+  const data = getFileData(filePath)
+  const selectedFeedback = data.find(
+    (item) => item.id === (feedbackId as string)
+  )
+
+  if (!selectedFeedback) {
+    res.status(200).json({ message: 'Fail', feedback: null })
+    return
+  }
+
+  res.status(200).json({ message: 'Success!', feedback: selectedFeedback })
+}
+
+export default handler
+```
+
+find를 통해 찾고 찾은 데이터를 넘겨주면 된다.
+
+feedback page에서 사용해보자
+
+피드백을 눌렀을 때 해당 id로 요청을 보내고 단일 데이터를 받아온다. 받아온 데이터를 상태에 저장해 이메일을 보여주는 과정을 진행해본다. (getStaticProps로 전체 데이터를 가져왔으니 중복되는 과정이지만, 동적 API Route 기능에 대한 학습 목적으로 진행한 것이다.)
+
+```tsx
+const FeedbackPage = ({ feedbackList }: Props) => {
+  const [feedbackData, setFeedbackData] = useState<FeedbackData>()
+
+  const onFeedbackClick = (id: string) => {
+    fetch(`/api/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setFeedbackData(data.feedback)
+      })
+  }
+
+  return (
+    <>
+      {feedbackData && <p>{feedbackData.email}</p>}
+      <ul>
+        {feedbackList.map((item) => (
+          <li key={item.id}>
+            <button type='button' onClick={onFeedbackClick.bind(null, item.id)}>
+              {item.feedback}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+}
+
+export default FeedbackPage
+```
+
+bind를 통해 함수를 미리 구성하게 해준다. 함수가 아직 실행되지는 않고 나중 실행을 위해 구성만 미리 하는 것. 예를 들어 수신될 파라미터 값을 미리 구성하는 것이다. 첫번째 인자는 함수 내부의 키워드 값, 두번째는 해당 함수에서 수신할 첫번째 인수
+
+[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind)
