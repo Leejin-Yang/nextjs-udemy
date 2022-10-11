@@ -4,6 +4,7 @@ import Head from 'next/head'
 import EventContent from '../../components/eventDetail/eventContent'
 import EventLogistics from '../../components/eventDetail/eventLogistics'
 import EventSummary from '../../components/eventDetail/eventSummary'
+import Comments from '../../components/input/comments'
 import { Event, getEventById, getFeaturedEvents } from '../../services/events'
 
 interface Props {
@@ -27,6 +28,7 @@ const EventDetailPage = ({ event }: Props) => {
       <EventContent>
         <p>{event.description}</p>
       </EventContent>
+      <Comments eventId={event.id} />
     </>
   )
 }
