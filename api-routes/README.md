@@ -199,3 +199,29 @@ const onLoadFeedbackClick = () => {
     })
 }
 ```
+
+<br>
+
+## 사전 렌더링 페이지에서 사용하기
+
+getStaticProps를 이용한다. 이 함수 내에서 어떻게 데이터를 fetching 할 수 있을까? 이전에 firebase에서 데이터를 가져올 때를 떠올려보자.
+
+하지만 자체 API를 사용할 때는 getStaticProps나 getServerSideProps에서 fetch 함수를 사용하면 안된다. 하나의 프로젝트에 속하므로 결국 한 서버에서 처리한다. API Route에 있는 로직을 일반 페이지에도 적용해야 한다면 사용했던 파일 경로나 가져오는 함수를 페이지에서 바로 실행해야 한다. 응답 상태 코드나 응답 값을 설정하지 않아도 된다. 전에 생성했던 함수를 export 한다.
+
+이렇게 API Route나 일반 페이지에서 사용한다면 이 유틸함수를 개별 파일로 생성해도 좋을 것이다.
+
+HTTP 요청을 보내지 말고 해당 함수를 가져와 바로 실행한다.
+
+```tsx
+import { getFileData, getFilePath } from '../api/feedback'
+import type { FeedbackData } from '../api/feedback'
+
+export const getStaticProps: GetStaticProps = async () => {
+  const filePath = getFilePath()
+  const data = getFileData(filePath)
+
+  return {
+    props: { feedbackList: data },
+  }
+}
+```

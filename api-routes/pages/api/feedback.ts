@@ -13,11 +13,11 @@ export interface FeedbackData {
   feedback: string
 }
 
-function getFilePath() {
+export function getFilePath() {
   return path.join(process.cwd(), 'data', 'feedback.json')
 }
 
-function getFileData(filePath: string) {
+export function getFileData(filePath: string) {
   const fileData = fs.readFileSync(filePath, { encoding: 'utf-8' }) // json 데이터
   const data = JSON.parse(fileData) as FeedbackData[]
 
