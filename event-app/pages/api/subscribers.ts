@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import fs from 'fs'
 import path from 'path'
+import { MongoClient } from 'mongodb'
 
 interface SubscriberData {
   id: string
@@ -25,7 +26,7 @@ interface Data {
   subscribers?: SubscriberData[]
 }
 
-function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   if (req.method === 'POST') {
     const email = req.body.email
 
@@ -34,21 +35,28 @@ function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
       return
     }
 
-    const newSubscriber = {
-      id: new Date().toISOString(),
-      email,
-    }
+    //const newSubscriber = {
+    //  id: new Date().toISOString(),
+    //  email,
+    //}
 
-    const filePath = getSubscribersFilePath()
-    const data = getFileData(filePath)
-    data.push(newSubscriber)
-    fs.writeFileSync(filePath, JSON.stringify(data))
+    //파일을 이용해 저장
+    //const filePath = getSubscribersFilePath()
+    //const data = getFileData(filePath)
+    //data.push(newSubscriber)
+    //fs.writeFileSync(filePath, JSON.stringify(data))
+
+    //MongoDB
+    const client = await MongoClient.connect(
+      `mongodb+srv://admin:${process.env.DB_PASSWORD}@cluster0.dixjhgb.mongodb.net/subscribers?retryWrites=true&w=majority`
+    )
+    const db = client.db()
+
+    await db.collection('emails').insertOne({ email })
+
+    client.close()
 
     res.status(201).json({ message: 'Success!' })
-  } else {
-    const filePath = getSubscribersFilePath()
-    const data = getFileData(filePath)
-    res.status(200).json({ message: 'Success!', subscribers: data })
   }
 }
 

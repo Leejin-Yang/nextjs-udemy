@@ -258,3 +258,33 @@ function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
 ```
 
 클라이언트 코드에서도 유효성 검사를 해보자. 유효성 검사는 사용자에게 피드백을 빨리 보여주기 위한 편의 기능일 뿐 의존해서는 안된다.
+
+api routes로 fetch 요청 보낼 때 에러
+
+요청 주소 앞에 /를 안붙여줘서 생긴 에러. events 폴더 내에 요청을 보내고 있었는데 붙이지 않으니 root/events/api/:id 로 가고 있었다. events 폴더안에는 catch-all 파일도 있어 요청이 저 파일로 가게 되어 자꾸 에러가 발생했다.
+
+<br>
+
+### DB를 이용해 데이터 저장
+
+[https://www.npmjs.com/package/mongodb](https://www.npmjs.com/package/mongodb)
+
+MongoDB: Node.js와 사용하기 쉽다. 프로덕션 준비가 된 확장 가능한 DB이다. 무료로 시작!
+
+MongoDB와 통신하고 쿼리를 보내려면 패키지를 설치해야한다.
+
+```tsx
+yarn add mongodb
+```
+
+클라이언트 코드에서는 사용하지 않는다. 최적화 되지 않았기 때문(내부에서 Node.js API를 사용할 가능성 농후), 브라우저에서 작동하더라도 보안 문제가 된다(DB와 통신하려면 크리덴셜을 코드에 넣어야 하는데 사용자가 보면 안 된다.)
+
+Next에서 환경변수
+
+[https://taenami.tistory.com/26](https://taenami.tistory.com/26)
+
+node와 클라이언트에서
+
+network access
+
+앱을 배포한 후에는 사이트를 배포한 서버가 이 리스트에 있어야 한다.
