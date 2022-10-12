@@ -288,3 +288,29 @@ node와 클라이언트에서
 network access
 
 앱을 배포한 후에는 사이트를 배포한 서버가 이 리스트에 있어야 한다.
+
+```tsx
+const client = await MongoClient.connect('MongoDB 주소')
+const db = client.db()
+
+await db.collection('subscribers').insertOne({ email })
+
+client.close()
+```
+
+아이디에 따른 댓글을 관리할 예정, 실제로 이벤트 목록들도 DB에서 관리할 것이기 때문에 목록 컬렉션에서 id를 저장하는 것이 합리적이겠다. 이 댓글이 속한 이벤트에 대한 참조를 가지도록 eventId 프로퍼티를 추가한다.
+
+이벤트를 찾기 위해서 `db.collection().find`
+
+find 메소드는 컬렉션에서 데이터를 찾아주는데 결과를 제한할 수 있다. 기본값으로 array가 아니고 문서를 수동으로 탐색해야하는 커서가 나타난다. toArray 메소드
+
+이벤트에 맞는 댓글을 필터링하기 위해 find 메소드에 값을 전달한다. 이때 빈 객체는 필터를 적용하지 않아 모든 문서를 가져온다.
+
+```tsx
+const db = client.db()
+const comments = await db
+  .collection('comments')
+  .find({ eventId })
+  .sort({ _id: -1 }) // 내림차순
+  .toArray()
+```

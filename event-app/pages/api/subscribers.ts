@@ -48,11 +48,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
 
     //MongoDB
     const client = await MongoClient.connect(
-      `mongodb+srv://admin:${process.env.DB_PASSWORD}@cluster0.dixjhgb.mongodb.net/subscribers?retryWrites=true&w=majority`
+      `mongodb+srv://admin:${process.env.DB_PASSWORD}@cluster0.dixjhgb.mongodb.net/events?retryWrites=true&w=majority`
     )
     const db = client.db()
 
-    await db.collection('emails').insertOne({ email })
+    await db.collection('subscribers').insertOne({ email })
 
     client.close()
 

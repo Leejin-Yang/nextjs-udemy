@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import path from 'path'
 import fs from 'fs'
+import { MongoClient } from 'mongodb'
 
 export function getCommentsFilePath() {
   return path.join(process.cwd(), 'data', 'comments.json')
@@ -32,10 +33,14 @@ interface Data<T> {
 const isValidEmail = (email: any) => email && email.includes('@')
 const isValidText = (text: any) => text && text.trim() !== ''
 
-function handler(req: NextApiRequest, res: NextApiResponse<Data<any>>) {
+async function handler(req: NextApiRequest, res: NextApiResponse<Data<any>>) {
   const eventId = req.query.eventId
 
   if (typeof eventId !== 'string') return
+
+  const client = await MongoClient.connect(
+    `mongodb+srv://admin:${process.env.DB_PASSWORD}@cluster0.dixjhgb.mongodb.net/events?retryWrites=true&w=majority`
+  )
 
   if (req.method === 'POST') {
     const { email, name, text } = req.body
@@ -46,37 +51,53 @@ function handler(req: NextApiRequest, res: NextApiResponse<Data<any>>) {
     }
 
     const newComment = {
-      id: new Date().toISOString(),
       email,
       name,
       text,
+      eventId,
     }
 
-    const filePath = getCommentsFilePath()
-    const data = getFileData(filePath) as Comments[]
-    const selectedData = data.find((item) => item.id === eventId)
+    //파일에 저장
+    //const filePath = getCommentsFilePath()
+    //const data = getFileData(filePath) as Comments[]
+    //const selectedData = data.find((item) => item.id === eventId)
 
-    if (!selectedData) {
-      data.push({ id: eventId, comments: [newComment] })
-    }
+    //if (!selectedData) {
+    //  data.push({ id: eventId, comments: [newComment] })
+    //}
 
-    selectedData?.comments.push(newComment)
+    //selectedData?.comments.push(newComment)
 
-    fs.writeFileSync(filePath, JSON.stringify(data))
+    //fs.writeFileSync(filePath, JSON.stringify(data))
+
+    const db = client.db()
+    const result = await db.collection('comments').insertOne(newComment)
+
+    //newComment.id = result.insertedId
+
     res
       .status(201)
-      .json({ message: 'Success to comment!', comments: newComment })
+      .json({ message: 'Success to add comment!', comments: newComment })
   }
 
   if (req.method === 'GET') {
-    const filePath = getCommentsFilePath()
-    const data = getFileData(filePath) as Comments[]
-    const selectedData = data.find((item) => item.id === eventId)
+    //파일에 저장
+    //const filePath = getCommentsFilePath()
+    //const data = getFileData(filePath) as Comments[]
+    //const selectedData = data.find((item) => item.id === eventId)
 
-    res
-      .status(200)
-      .json({ message: 'Success!', comments: selectedData?.comments })
+    //MongoDB
+    const db = client.db()
+    const comments = await db
+      .collection('comments')
+      .find({ eventId })
+      .sort({ _id: -1 }) // 내림차순
+      .toArray()
+
+    res.status(200).json({ message: 'Success to load comments!', comments })
   }
+
+  client.close()
 }
 
 export default handler
