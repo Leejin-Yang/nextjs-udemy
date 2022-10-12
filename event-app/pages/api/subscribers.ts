@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import fs from 'fs'
 import path from 'path'
-import { MongoClient } from 'mongodb'
+
+import { connectDB, insertDocument } from '../../services/eventsDb'
 
 interface SubscriberData {
   id: string
@@ -47,14 +48,22 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
     //fs.writeFileSync(filePath, JSON.stringify(data))
 
     //MongoDB
-    const client = await MongoClient.connect(
-      `mongodb+srv://admin:${process.env.DB_PASSWORD}@cluster0.dixjhgb.mongodb.net/events?retryWrites=true&w=majority`
-    )
-    const db = client.db()
+    let client
 
-    await db.collection('subscribers').insertOne({ email })
+    try {
+      client = await connectDB()
+    } catch (error) {
+      res.status(500).json({ message: 'Connecting to the database failed!' })
+      return
+    }
 
-    client.close()
+    try {
+      insertDocument(client, 'subscriber', { email })
+      client.close()
+    } catch (error) {
+      res.status(500).json({ message: 'Inserting data failed!' })
+      return
+    }
 
     res.status(201).json({ message: 'Success!' })
   }

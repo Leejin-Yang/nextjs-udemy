@@ -1,7 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import path from 'path'
 import fs from 'fs'
-import { MongoClient } from 'mongodb'
+
+import {
+  connectDB,
+  getAllDocuments,
+  insertDocument,
+} from '../../../services/eventsDb'
 
 export function getCommentsFilePath() {
   return path.join(process.cwd(), 'data', 'comments.json')
@@ -38,15 +43,21 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data<any>>) {
 
   if (typeof eventId !== 'string') return
 
-  const client = await MongoClient.connect(
-    `mongodb+srv://admin:${process.env.DB_PASSWORD}@cluster0.dixjhgb.mongodb.net/events?retryWrites=true&w=majority`
-  )
+  let client
+
+  try {
+    client = await connectDB()
+  } catch (error) {
+    res.status(500).json({ message: 'Inserting data failed!' })
+    return
+  }
 
   if (req.method === 'POST') {
     const { email, name, text } = req.body
 
     if (!isValidEmail(email) || !isValidText(name) || !isValidText(text)) {
       res.status(422).json({ message: 'Invalid input.' })
+      client.close()
       return
     }
 
@@ -69,15 +80,15 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data<any>>) {
     //selectedData?.comments.push(newComment)
 
     //fs.writeFileSync(filePath, JSON.stringify(data))
-
-    const db = client.db()
-    const result = await db.collection('comments').insertOne(newComment)
-
-    //newComment.id = result.insertedId
-
-    res
-      .status(201)
-      .json({ message: 'Success to add comment!', comments: newComment })
+    try {
+      await insertDocument(client, 'comments', newComment)
+      //newComment._id = result.insertedId
+      res
+        .status(201)
+        .json({ message: 'Success to add comment!', comments: newComment })
+    } catch (error) {
+      res.status(500).json({ message: 'Inserting data failed!' })
+    }
   }
 
   if (req.method === 'GET') {
@@ -87,14 +98,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data<any>>) {
     //const selectedData = data.find((item) => item.id === eventId)
 
     //MongoDB
-    const db = client.db()
-    const comments = await db
-      .collection('comments')
-      .find({ eventId })
-      .sort({ _id: -1 }) // 내림차순
-      .toArray()
 
-    res.status(200).json({ message: 'Success to load comments!', comments })
+    try {
+      const comments = await getAllDocuments(
+        client,
+        'comments',
+        { eventId },
+        { _id: -1 }
+      )
+      res.status(200).json({ message: 'Success to load comments!', comments })
+    } catch (error) {
+      res.status(500).json({ message: 'Getting comments failed!' })
+    }
   }
 
   client.close()

@@ -314,3 +314,34 @@ const comments = await db
   .sort({ _id: -1 }) // 내림차순
   .toArray()
 ```
+
+<br>
+
+### 에러 처리
+
+데이터베이스 작업에서 모든 동작이 잘 작동하지 않을 것이다. try/catch 문을 사용하자.
+
+- 구독: 연결 여부, 데이터 삽입 여부
+
+```tsx
+let client
+
+try {
+  client = await connectDB()
+} catch (error) {
+  res.status(500).json({ message: 'Connecting to the database failed!' })
+  return
+}
+
+try {
+  insertDocument(client, { email })
+  client.close()
+} catch (error) {
+  res.status(500).json({ message: 'Inserting data failed!' })
+  return
+}
+```
+
+close에 대한 추가 내용
+
+MongoDB 관련 코드가 자주 실행되는 앱을 구축하는 경우 MongoDB의 연결 풀링을 활용하는 것이 좋다. 이를 위해서는 코드 내에 있는 모든 close 메소드를 삭제하면된다.
