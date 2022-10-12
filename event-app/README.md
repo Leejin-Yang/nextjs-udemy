@@ -235,3 +235,26 @@ getStaticProps와 클라이언트 사이드 데이터 fetching은 양립할 수 
 
 - 뉴스레터 구독 플로우 추가
 - 댓글 기능 추가
+
+<br>
+
+### 뉴스레터 구독
+
+이메일 서버 측 유효성 검사, 클라이언트 측 유효성 검사. 클라이언트 코드는 사용자에게 노출되어 있다. 확실히 유효한 데이터를 받으려면 서버 측에서 유효성 검사를 해보자. 사용자가 열람하거나 변경할 수 없으니까.
+
+422: 입력값이 유효하지 않을 때 나타내는 상태코드
+
+```tsx
+function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+  if (req.method === 'POST') {
+    const email = req.body.email
+
+    if (!isValidEmail) {
+      res.status(422).json({ message: 'Invalid email address' })
+      return
+    }
+  }
+}
+```
+
+클라이언트 코드에서도 유효성 검사를 해보자. 유효성 검사는 사용자에게 피드백을 빨리 보여주기 위한 편의 기능일 뿐 의존해서는 안된다.

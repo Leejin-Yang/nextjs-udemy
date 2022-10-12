@@ -18,6 +18,8 @@ export function getFileData(filePath: string) {
   return data
 }
 
+const isValidEmail = (email: any) => email && email.includes('@')
+
 interface Data {
   message: string
   subscribers?: SubscriberData[]
@@ -26,6 +28,11 @@ interface Data {
 function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   if (req.method === 'POST') {
     const email = req.body.email
+
+    if (!isValidEmail) {
+      res.status(422).json({ message: 'Invalid email address' })
+      return
+    }
 
     const newSubscriber = {
       id: new Date().toISOString(),

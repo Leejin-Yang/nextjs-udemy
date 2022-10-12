@@ -12,11 +12,9 @@ function NewsletterRegistration() {
 
     if (!enteredEmail) return
 
-    const reqBody = { email: enteredEmail }
-
     fetch('/api/subscribers', {
       method: 'POST',
-      body: JSON.stringify(reqBody),
+      body: JSON.stringify({ email: enteredEmail }),
       headers: {
         'Content-Type': 'application/json',
       },
