@@ -228,3 +228,120 @@ JSON으로 변환 가능한 타입을 리턴해야한다.
 getStaticProps와 클라이언트 사이드 데이터 fetching은 양립할 수 있지만 (사전 렌더링을 수행한 페이지를 불러와서 업데이트 하는 경우), getServerSideProps와는 그럴 수 없다. 새로운 요청마다 getServerSideProps 함수가 실행되기 때문이다. 요청 헤더를 분석해야할 필요가 있는 상황이 아니라면 다르긴 하지만… 지금은 그럴 필요가 없기 때문에 지워준다.
 
 **_상황에 맞는 데이터 fetching 기법을 사용하자!_**
+
+---
+
+## With API Routes
+
+- 뉴스레터 구독 플로우 추가
+- 댓글 기능 추가
+
+<br>
+
+### 뉴스레터 구독
+
+이메일 서버 측 유효성 검사, 클라이언트 측 유효성 검사. 클라이언트 코드는 사용자에게 노출되어 있다. 확실히 유효한 데이터를 받으려면 서버 측에서 유효성 검사를 해보자. 사용자가 열람하거나 변경할 수 없으니까.
+
+422: 입력값이 유효하지 않을 때 나타내는 상태코드
+
+```tsx
+function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+  if (req.method === 'POST') {
+    const email = req.body.email
+
+    if (!isValidEmail) {
+      res.status(422).json({ message: 'Invalid email address' })
+      return
+    }
+  }
+}
+```
+
+클라이언트 코드에서도 유효성 검사를 해보자. 유효성 검사는 사용자에게 피드백을 빨리 보여주기 위한 편의 기능일 뿐 의존해서는 안된다.
+
+api routes로 fetch 요청 보낼 때 에러
+
+요청 주소 앞에 /를 안붙여줘서 생긴 에러. events 폴더 내에 요청을 보내고 있었는데 붙이지 않으니 root/events/api/:id 로 가고 있었다. events 폴더안에는 catch-all 파일도 있어 요청이 저 파일로 가게 되어 자꾸 에러가 발생했다.
+
+<br>
+
+### DB를 이용해 데이터 저장
+
+[https://www.npmjs.com/package/mongodb](https://www.npmjs.com/package/mongodb)
+
+MongoDB: Node.js와 사용하기 쉽다. 프로덕션 준비가 된 확장 가능한 DB이다. 무료로 시작!
+
+MongoDB와 통신하고 쿼리를 보내려면 패키지를 설치해야한다.
+
+```tsx
+yarn add mongodb
+```
+
+클라이언트 코드에서는 사용하지 않는다. 최적화 되지 않았기 때문(내부에서 Node.js API를 사용할 가능성 농후), 브라우저에서 작동하더라도 보안 문제가 된다(DB와 통신하려면 크리덴셜을 코드에 넣어야 하는데 사용자가 보면 안 된다.)
+
+Next에서 환경변수
+
+[https://taenami.tistory.com/26](https://taenami.tistory.com/26)
+
+node와 클라이언트에서
+
+network access
+
+앱을 배포한 후에는 사이트를 배포한 서버가 이 리스트에 있어야 한다.
+
+```tsx
+const client = await MongoClient.connect('MongoDB 주소')
+const db = client.db()
+
+await db.collection('subscribers').insertOne({ email })
+
+client.close()
+```
+
+아이디에 따른 댓글을 관리할 예정, 실제로 이벤트 목록들도 DB에서 관리할 것이기 때문에 목록 컬렉션에서 id를 저장하는 것이 합리적이겠다. 이 댓글이 속한 이벤트에 대한 참조를 가지도록 eventId 프로퍼티를 추가한다.
+
+이벤트를 찾기 위해서 `db.collection().find`
+
+find 메소드는 컬렉션에서 데이터를 찾아주는데 결과를 제한할 수 있다. 기본값으로 array가 아니고 문서를 수동으로 탐색해야하는 커서가 나타난다. toArray 메소드
+
+이벤트에 맞는 댓글을 필터링하기 위해 find 메소드에 값을 전달한다. 이때 빈 객체는 필터를 적용하지 않아 모든 문서를 가져온다.
+
+```tsx
+const db = client.db()
+const comments = await db
+  .collection('comments')
+  .find({ eventId })
+  .sort({ _id: -1 }) // 내림차순
+  .toArray()
+```
+
+<br>
+
+### 에러 처리
+
+데이터베이스 작업에서 모든 동작이 잘 작동하지 않을 것이다. try/catch 문을 사용하자.
+
+- 구독: 연결 여부, 데이터 삽입 여부
+
+```tsx
+let client
+
+try {
+  client = await connectDB()
+} catch (error) {
+  res.status(500).json({ message: 'Connecting to the database failed!' })
+  return
+}
+
+try {
+  insertDocument(client, { email })
+  client.close()
+} catch (error) {
+  res.status(500).json({ message: 'Inserting data failed!' })
+  return
+}
+```
+
+close에 대한 추가 내용
+
+MongoDB 관련 코드가 자주 실행되는 앱을 구축하는 경우 MongoDB의 연결 풀링을 활용하는 것이 좋다. 이를 위해서는 코드 내에 있는 모든 close 메소드를 삭제하면된다.

@@ -2,6 +2,7 @@ import { GetStaticProps } from 'next'
 import Head from 'next/head'
 
 import EventList from '../components/events/eventList'
+import NewsletterRegistration from '../components/input/newsletterRegistration'
 import { Event, getFeaturedEvents } from '../services/events'
 
 interface Props {
@@ -18,6 +19,7 @@ const HomePage = ({ events }: Props) => {
           content='Find a lot of great events that allow you to evolve.'
         />
       </Head>
+      <NewsletterRegistration />
       <EventList events={events} />
     </>
   )
