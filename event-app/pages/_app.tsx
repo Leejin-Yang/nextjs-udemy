@@ -4,7 +4,6 @@ import Layout from '../components/layout/layout'
 import Head from 'next/head'
 
 import NotificationContextProvider from '../store/notificationContext'
-import Notification from '../components/common/notification'
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -19,7 +18,6 @@ function MyApp({ Component, pageProps }: AppProps) {
           />
         </Head>
         <Component {...pageProps} />
-        <Notification title='test' message='This is Test' status='pending' />
       </Layout>
     </NotificationContextProvider>
   )

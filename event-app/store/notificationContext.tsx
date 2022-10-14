@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useState } from 'react'
 
-interface Notification {
+export interface Notification {
   title: string
   message: string
   status: string
