@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb'
+import { MongoClient, ObjectId } from 'mongodb'
 import type { Sort } from 'mongodb'
 
 export async function connectDB() {
@@ -10,17 +10,19 @@ export async function connectDB() {
 }
 
 interface Document {
-  [key: string]: string
+  email: string
 }
 
-export async function insertDocument(
+export async function insertDocument<T extends Document>(
   client: MongoClient,
   collection: string,
-  document: Document
+  document: T
 ) {
   const db = client.db()
 
-  await db.collection(collection).insertOne(document)
+  const result = await db.collection(collection).insertOne(document)
+
+  return result
 }
 
 export async function getAllDocuments(
