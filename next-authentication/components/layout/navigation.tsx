@@ -1,4 +1,4 @@
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 
 import styles from './navigation.module.css'
@@ -30,7 +30,7 @@ function Navigation() {
           )}
           {status === 'authenticated' && (
             <li>
-              <button>Logout</button>
+              <button onClick={() => signOut()}>Logout</button>
             </li>
           )}
         </ul>

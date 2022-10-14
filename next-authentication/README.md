@@ -118,3 +118,17 @@ const { data: session, status } = useSession()
 ```
 
 세션 활성 상태를 나타내는 세션 객체와 사용자가 현재 페이지에 대한 로그인 상태를 확인하는 요소
+
+[https://next-auth.js.org/getting-started/client#signout](https://next-auth.js.org/getting-started/client#signout)
+
+로그아웃 함수
+
+### 인증 상태에 따라 라우트 보호
+
+useSession과 getSession. getSession은 새 요청을 보내서 최근 세션 데이터를 가져온다.
+
+공식 문서를 보니 여러가지 방법이 있었다.
+
+[https://next-auth.js.org/getting-started/client#require-session](https://next-auth.js.org/getting-started/client#require-session)
+
+useSession에서 session 필요 여부와 인증되지 않았을 때 콜백을 줄 수 있다.
