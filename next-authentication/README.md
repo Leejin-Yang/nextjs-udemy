@@ -100,3 +100,21 @@ session: jwt가 생성되었는지 확인하려면. 인증된 사용자에 대�
 ![login-result-console](https://user-images.githubusercontent.com/78616893/195826329-5bcfd3fb-3383-432a-bd80-8758837ecd69.png)
 
 결과를 가지고 상태를 저장해 해당 상태에 맞는 페이지를 보여줄 수 있다. 하지만 새로고침하면 상태는 초기화. 메모리 공간 외에 영궉으로 토큰을 저장할 곳을 확보하고, 그 토큰을 통해 요청을 전송하여 api를 보호할 수 있도록 해야한다.
+
+로그인하면 Nextjs에서 생성하고 관리하는 쿠키들이 나열된다.
+
+- next-auth.session-token(jwt)
+- next-auth.callback-url
+- next-auth.csrf-token
+
+로그인에 성공했을 때 Nextjs에서 자동으로 생성하는 토큰으로 이 토큰의 값을 기반으로 작업을 수행할 수 있다.
+
+[https://next-auth.js.org/getting-started/client#usesession](https://next-auth.js.org/getting-started/client#usesession)
+
+```tsx
+import { useSession } from 'next-auth/react'
+
+const { data: session, status } = useSession()
+```
+
+세션 활성 상태를 나타내는 세션 객체와 사용자가 현재 페이지에 대한 로그인 상태를 확인하는 요소

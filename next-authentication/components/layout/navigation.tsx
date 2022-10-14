@@ -1,8 +1,14 @@
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 
 import styles from './navigation.module.css'
 
 function Navigation() {
+  const { data: session, status } = useSession()
+
+  console.log(session)
+  console.log(status)
+
   return (
     <header className={styles.header}>
       <Link href='/'>
@@ -12,15 +18,21 @@ function Navigation() {
       </Link>
       <nav>
         <ul>
-          <li>
-            <Link href='/auth'>Login</Link>
-          </li>
-          <li>
-            <Link href='/profile'>Profile</Link>
-          </li>
-          <li>
-            <button>Logout</button>
-          </li>
+          {!session && (
+            <li>
+              <Link href='/auth'>Login</Link>
+            </li>
+          )}
+          {status === 'authenticated' && (
+            <li>
+              <Link href='/profile'>Profile</Link>
+            </li>
+          )}
+          {status === 'authenticated' && (
+            <li>
+              <button>Logout</button>
+            </li>
+          )}
         </ul>
       </nav>
     </header>
