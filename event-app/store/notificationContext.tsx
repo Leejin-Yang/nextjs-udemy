@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useState } from 'react'
+import { createContext, ReactNode, useEffect, useState } from 'react'
 
 export interface Notification {
   title: string
@@ -33,6 +33,18 @@ const NotificationContextProvider = ({ children }: Props) => {
   const hideNotification = () => {
     setActiveNotification(null)
   }
+
+  useEffect(() => {
+    if (!activeNotification || activeNotification.status === 'pending') return
+
+    const timer = setTimeout(() => {
+      setActiveNotification(null)
+    }, 3000)
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [activeNotification])
 
   const initialContext = {
     notification: activeNotification,
