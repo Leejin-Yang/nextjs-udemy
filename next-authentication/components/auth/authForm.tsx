@@ -47,7 +47,10 @@ function AuthForm() {
         password: enteredPassword,
       })
       console.log(result)
-      router.replace('/')
+      if (!result?.error) {
+        router.replace('/')
+      }
+
       return
     }
 

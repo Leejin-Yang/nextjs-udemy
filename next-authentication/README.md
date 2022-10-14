@@ -132,3 +132,13 @@ useSession과 getSession. getSession은 새 요청을 보내서 최근 세션 �
 [https://next-auth.js.org/getting-started/client#require-session](https://next-auth.js.org/getting-started/client#require-session)
 
 useSession에서 session 필요 여부와 인증되지 않았을 때 콜백을 줄 수 있다.
+
+클라이언트 사이드 코드만으로 페이지 리다이렉트 제어가 어렵다. 인증 여부를 알아내기 위해 클라이언트사이드 js 코드를 사용하는데 이 과정을 거치는 시간 동안 기다리는 수 밖에 없다. 서버 사이드 코드를 사용해서 요청을 보낸 사용자의 인증 여부를 확인해 다른 페이지 콘텐츠를 반환하고 리디렉션할 수 있다. getServerSideProps
+
+useSession을 통해 세션을 가져오고 있고 어떤 페이지는 getServerSideProp으로 서버에서 세션을 가져오고 있다. 중복 요청이 발생한다. `SessionProvider` 버전이 오르면서 필수 사용으로 바뀌었다.
+
+[https://next-auth.js.org/getting-started/upgrade-v4#sessionprovider](https://next-auth.js.org/getting-started/upgrade-v4#sessionprovider)
+
+[https://next-auth.js.org/getting-started/client#sessionprovider](https://next-auth.js.org/getting-started/client#sessionprovider)
+
+서버 측과 클라이언트 측 렌더링을 모두 지원하는 페이지에서 세션을 두 번 확인하는 것을 피할 수 있다.

@@ -1,28 +1,31 @@
-//import { useSession } from 'next-auth/react'
-//import { useRouter } from 'next/router'
-//import { useEffect } from 'react'
+import { GetServerSidePropsContext } from 'next'
+import { unstable_getServerSession } from 'next-auth'
 import AuthForm from '../components/auth/authForm'
+import { authOptions } from './api/auth/[...nextauth]'
 
 function AuthPage() {
-  //세션이 있는 경우 redirect 생각해보자
-  //const { status } = useSession()
-  //const router = useRouter()
-
-  //useEffect(() => {
-  //  if (status === 'authenticated') {
-  //    router.replace('/')
-  //  }
-  //}, [router, status])
-
-  //if (status === 'loading') {
-  //  return <p>Loading...</p>
-  //}
-
-  //if (status === 'authenticated') {
-  //  return <p>Already log in</p>
-  //}
-
   return <AuthForm />
 }
 
 export default AuthPage
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await unstable_getServerSession(
+    context.req,
+    context.res,
+    authOptions
+  )
+
+  if (session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: { session },
+  }
+}
