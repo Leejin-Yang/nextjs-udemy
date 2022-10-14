@@ -60,3 +60,43 @@ export async function hashPassword(password: string) {
 ```
 
 같은 이메일은 가입할 수 없게 해야한다. db에서 유저를 찾아 유효성 검사를 한다.
+
+### 인증 설정
+
+인증을 통해 사용자를 로그인하고 로그인 권한을 얻으며 다시 말해 로그인된 사용자의 토큰을 얻고 사용자 로그인을 확인할 수 있다. 뷰를 바꾸고 특정 라우트를 비활성화하는 클라이언트 사이드 / 추가될 여러 API 라우트의 서버 사이트 양쪽에 로그인했는지 확인한다. 여기서 nextauth가 필요하다.
+
+nextauth를 통해 사용자를 인증하고 사용자가 권한을 가지는지 여부를 확인할 수 있다. 해당 토큰의 생성 및 저장을 관리함으로써 그렇게 할 수 있다. 로그인 api를 생성해보자
+
+catch-all route가 필요하다. nextauth 패키지가 내부에서 여러 라우트를 활용하기 때문에. 예를 들어 사용자 로그인 및 사용자 로그아웃. 이 라우트를 향한 요청을 nextauth가 모두 자동으로 처리하도록 한다. 추가로 자체 라우트를 정의할 수 도 있다. nextauth의 내장된 경로를 오버라이드 하지 않는 한
+
+[https://next-auth.js.org/getting-started/rest-api](https://next-auth.js.org/getting-started/rest-api)
+
+```tsx
+import NextAuth from 'next-auth/next'
+
+export default NextAuth()
+```
+
+실행시키면 새로운 함수를 반환한다(handler). NextAuth를 호출할 때 구성 객체를 전달할 수 있다. 그 객체를 통해 동작을 구성할 수 있다.
+
+[https://next-auth.js.org/configuration/options](https://next-auth.js.org/configuration/options)
+
+[https://next-auth.js.org/getting-started/upgrade-v4](https://next-auth.js.org/getting-started/upgrade-v4) 버전업
+
+[https://next-auth.js.org/configuration/providers/credentials](https://next-auth.js.org/configuration/providers/credentials)
+
+providers: CredentialsProvider
+
+- credentials: 대신 로그인 양식을 만들어준다.
+- authorize(credentials): 들어오는 로그인 요청을 Nextjs가 수신할 때 Nextjs가 대신 호출해준다. 객체를 반환하면 jwt로 부호화된다. jwt가 생성되었는지 확인하려면
+- 고유의 인증 논리
+
+session: jwt가 생성되었는지 확인하려면. 인증된 사용자에 대한 세션을 관리하는 방법을 구성할 수 있다. db를 지정하지 않으면 자동으로 jwt 프로퍼티가 true 값을 가진다. 다른 프로바이더를 사용한다면 db를 추가하고 세션을 사용할 수 있다.
+
+### 클라이언트 사이드 로그인
+
+[https://next-auth.js.org/getting-started/client#signin](https://next-auth.js.org/getting-started/client#signin)
+
+![login-result-console](https://user-images.githubusercontent.com/78616893/195826329-5bcfd3fb-3383-432a-bd80-8758837ecd69.png)
+
+결과를 가지고 상태를 저장해 해당 상태에 맞는 페이지를 보여줄 수 있다. 하지만 새로고침하면 상태는 초기화. 메모리 공간 외에 영궉으로 토큰을 저장할 곳을 확보하고, 그 토큰을 통해 요청을 전송하여 api를 보호할 수 있도록 해야한다.
