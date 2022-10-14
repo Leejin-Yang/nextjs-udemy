@@ -110,9 +110,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
         { _id: -1 }
       )
 
-      if (!comments) {
-        return
-      }
       res.status(200).json({ message: 'Success to load comments!', comments })
     } catch (error) {
       res.status(500).json({ message: 'Getting comments failed!' })
