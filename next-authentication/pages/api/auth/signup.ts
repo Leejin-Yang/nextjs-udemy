@@ -33,6 +33,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   const client = await connectToDatabase()
   const db = client.db()
 
+  const existingUser = await db.collection('users').findOne({ email })
+
+  if (existingUser) {
+    res.status(422).json({ message: 'User exists already' })
+    return
+  }
+
   const hashedPassword = await hashPassword(password)
 
   await db.collection('users').insertOne({ email, password: hashedPassword })

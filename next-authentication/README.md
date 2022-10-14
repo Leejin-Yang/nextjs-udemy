@@ -58,3 +58,5 @@ export async function hashPassword(password: string) {
   return hashedPassword
 }
 ```
+
+같은 이메일은 가입할 수 없게 해야한다. db에서 유저를 찾아 유효성 검사를 한다.
