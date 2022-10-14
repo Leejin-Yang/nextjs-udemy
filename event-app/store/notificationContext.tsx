@@ -3,7 +3,7 @@ import { createContext, ReactNode, useState } from 'react'
 export interface Notification {
   title: string
   message: string
-  status: string
+  status: 'success' | 'error' | 'pending'
 }
 
 interface NotificationContextObject {
