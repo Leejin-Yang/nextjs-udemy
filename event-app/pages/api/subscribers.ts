@@ -65,7 +65,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
       return
     }
 
-    res.status(201).json({ message: 'Success!' })
+    res.status(201).json({ message: 'Successfully registered for newsletter' })
   }
 }
 

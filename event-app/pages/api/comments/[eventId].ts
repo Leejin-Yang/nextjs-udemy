@@ -7,6 +7,7 @@ import {
   getAllDocuments,
   insertDocument,
 } from '../../../services/eventsDb'
+import { ObjectId } from 'mongodb'
 
 export function getCommentsFilePath() {
   return path.join(process.cwd(), 'data', 'comments.json')
@@ -28,17 +29,19 @@ interface CommentData {
   email: string
   name: string
   text: string
+  eventId: string
+  _id?: ObjectId
 }
 
-interface Data<T> {
+interface Data {
   message: string
-  comments?: T | T[]
+  comments?: any
 }
 
 const isValidEmail = (email: any) => email && email.includes('@')
 const isValidText = (text: any) => text && text.trim() !== ''
 
-async function handler(req: NextApiRequest, res: NextApiResponse<Data<any>>) {
+async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   const eventId = req.query.eventId
 
   if (typeof eventId !== 'string') return
@@ -61,7 +64,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data<any>>) {
       return
     }
 
-    const newComment = {
+    const newComment: CommentData = {
       email,
       name,
       text,
@@ -81,8 +84,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data<any>>) {
 
     //fs.writeFileSync(filePath, JSON.stringify(data))
     try {
-      await insertDocument(client, 'comments', newComment)
-      //newComment._id = result.insertedId
+      const result = await insertDocument(client, 'comments', newComment)
+      newComment._id = result.insertedId
       res
         .status(201)
         .json({ message: 'Success to add comment!', comments: newComment })
@@ -106,6 +109,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data<any>>) {
         { eventId },
         { _id: -1 }
       )
+
       res.status(200).json({ message: 'Success to load comments!', comments })
     } catch (error) {
       res.status(500).json({ message: 'Getting comments failed!' })
