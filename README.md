@@ -4,6 +4,8 @@
 
 [https://www.udemy.com/course/nextjs-react-incl-two-paths/](https://www.udemy.com/course/nextjs-react-incl-two-paths/)
 
+강의는 js로 진행하지만 ts를 사용해 작성을 했습니다.
+
 ---
 
 ## 목차
@@ -13,3 +15,4 @@
 - [data-fetching](data-fetching/README.md)
 - [optimization](event-app/optimization.md)
 - [api-routes](api-routes/README.md)
+- [next-authentication](next-authentication/README.md)
