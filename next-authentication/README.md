@@ -8,11 +8,15 @@
 
 이 메커니즘은 위조 불가능한 권한 문제를 해결하기 위한 일반적인 접근 방식이다.
 
+<br>
+
 ### 서버사이드 세션
 
 서버에 고유 식별자를 저장하는 방식으로 작동. 고유한 세션 id를 생성하고 서버에 저장. 크리덴셜을 전송하는 클라이언트에 동일한 식별자를 보내는 것. 그러면 클라이언트는 해당 식별자를 저장하고 그리고 요청을 보낼 때 저장된 식별자를 첨부해주면 된다. 서버는 요청이 들어오면 식별자를 추출해 검사한다. 누가 훔쳐가면 어떡하냐? 연결을 암호화하는데 SSL을 사용하니까 전송 중에 도난 당할 수 없다.
 
 클라이언트 사이드에선 대체로 쿠키에 식별자를 저장. 사이트 간 스크립팅 공격을 방지하기 위해 js를 통해서는 쿠키에 접근할 수 없도록 구성할 수 있다. 그러면 서버에서만 읽을 수 있다. js로 접근이 가능하다해도 어쨌든 공격은 막아야 한다.
+
+<br>
 
 ### 인증 토큰
 
@@ -21,6 +25,8 @@
 SPA에서 세션보다는 토큰을 주로 이용한다. 페이지는 직접 제공되고 반드시 서버에 도달하지 않아도 로직으로 채워진다. 프론트엔드 js를 통해 동적으로 로드 및 생성된다. 방문하는 모든 페이지마다 요청을 보내는 것이 아니다. 그러므로 서버가 인증 여부를 직접 확인할 수 없는 상태에서 페이지가 로드된다. 또한 SPA에서 사용되는 백엔드 API는 일반적으로 stateless다. 연결된 개별 클라이언트를 따로 신경 쓰지 않는다. API 자체는 연결된 클라이언트에 대한 어떠한 추가 정보도 저장하지 않는다.
 
 분리된 프론트엔드 백엔드 조합. 서버는 인증된 클라이언트의 정보를 저장하지 않는다. 대신 클라이언트가 본인이 인증되었음을 증명할 독립적 권한을 얻어야 한다. 그래서 토큰(JSON Web Token)을 사용한다.
+
+<br>
 
 ### JWT
 
@@ -46,6 +52,8 @@ SPA에서 세션보다는 토큰을 주로 이용한다. 페이지는 직접 제
 
 사용자 계정에 대한 인증 체계를 구축하고자 할 때 먼저 사용자를 추가하는 논리를 구성해야 한다. 그래야만 nextauth에서 그 사용자에 대해 인증을 진행하고 사용자에게서 토큰을 가져오기 때문이다.
 
+<br>
+
 ### 사용자 추가
 
 비밀번호를 DB에 저장할 때 그대로 저장하면 안된다. 보안성을 높이기 위해서는 해독할 수 없도록 암호화한 다음에 저장해야 한다. `bcryptjs`
@@ -60,6 +68,8 @@ export async function hashPassword(password: string) {
 ```
 
 같은 이메일은 가입할 수 없게 해야한다. db에서 유저를 찾아 유효성 검사를 한다.
+
+<br>
 
 ### 인증 설정
 
@@ -93,6 +103,8 @@ providers: CredentialsProvider
 
 session: jwt가 생성되었는지 확인하려면. 인증된 사용자에 대한 세션을 관리하는 방법을 구성할 수 있다. db를 지정하지 않으면 자동으로 jwt 프로퍼티가 true 값을 가진다. 다른 프로바이더를 사용한다면 db를 추가하고 세션을 사용할 수 있다.
 
+<br>
+
 ### 클라이언트 사이드 로그인
 
 [https://next-auth.js.org/getting-started/client#signin](https://next-auth.js.org/getting-started/client#signin)
@@ -123,6 +135,8 @@ const { data: session, status } = useSession()
 
 로그아웃 함수
 
+<br>
+
 ### 인증 상태에 따라 라우트 보호
 
 useSession과 getSession. getSession은 새 요청을 보내서 최근 세션 데이터를 가져온다.
@@ -147,6 +161,8 @@ useSession을 통해 세션을 가져오고 있고 어떤 페이지는 getServer
 
 클라이언트 사이드 코드로 보호하는 것은 좋은 방법이지만 중요한건 사용자로서 할 수 있는 작업과 접근할 수 있는 API 라우트이다. 인증된 사용자의 요청만 작업을 트리거할 수 있도록 만들어야한다. API 라우트는 인증된 사용자가 보낸 요청인지 확인해야 할 것이다.
 
+<br>
+
 ### 비밀번호 변경
 
 - PATH method
@@ -159,3 +175,21 @@ useSession을 통해 세션을 가져오고 있고 어떤 페이지는 getServer
   - 불일치하면 403
 - 입력받은 새 비밀번호 해시 그리고 updateOne으로 유저 업데이트
 - 200 상태 코드
+
+<br>
+
+### 환경변수 설정
+
+[https://next-auth.js.org/configuration/options#environment-variables](https://next-auth.js.org/configuration/options#environment-variables)
+
+NEXTAUTH_URL: 배포할 때 필요한 환경변수
+
+<br>
+
+### 추가
+
+[https://next-auth.js.org/configuration/nextjs#unstable_getserversession](https://next-auth.js.org/configuration/nextjs#unstable_getserversession)
+
+unstable_getserversession
+
+서버에서 세션을 가져오기 위해 사용했다. 없어지거나 새로운 방식으로 변경될 예정이기에 사용하지 않는 것이 좋다. 권장하지 않는 방법이다.
